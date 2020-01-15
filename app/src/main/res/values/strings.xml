@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">AwesomeCountdown</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="date">Date</string>
+    <string name="time">Time</string>
+    <string name="event_name">Title</string>
+    <string name="remove_all">Remove All</string>
+    <string name="export">Export</string>
+    <string name="addevent">AddEvent</string>
+</resources>

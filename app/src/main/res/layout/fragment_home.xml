@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<layout xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <RelativeLayout
+        android:layout_height="match_parent"
+        android:layout_width="match_parent">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:padding="4dp"
+                android:backgroundTint="@color/white"
+                android:layout_width="match_parent"
+                android:id="@+id/event_recycler"
+                android:background="@android:color/white"
+                android:scrollbars="vertical"
+                android:layout_height="match_parent" />
+
+    </RelativeLayout>
+</layout>
+
+

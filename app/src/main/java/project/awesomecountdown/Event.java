@@ -11,11 +11,17 @@ public class Event {
     @PrimaryKey(autoGenerate = true)
     private long ID;
 
+    @ColumnInfo(name = "alertSet")
+    private boolean alertSet;
+
     @ColumnInfo(name = "eventOrderId")
     private long eventOrderId;
 
     @ColumnInfo(name = "millisLeft")
     private long millisLeft;
+
+    @ColumnInfo(name = "notificationId")
+    private long notificationId;
 
     @NonNull
     @ColumnInfo(name = "eventTitle")
@@ -25,6 +31,22 @@ public class Event {
         this.millisLeft = millisLeft;
         this.eventTitle = eventTitle;
         this.eventOrderId = eventOrderId;
+    }
+
+    public boolean isAlertSet() {
+        return alertSet;
+    }
+
+    public long getNotificationId() {
+        return notificationId;
+    }
+
+    public void setNotificationId(final long notificationId) {
+        this.notificationId = notificationId;
+    }
+
+    public void setAlertSet(final boolean alertSet) {
+        this.alertSet = alertSet;
     }
 
     public long getEventOrderId() {

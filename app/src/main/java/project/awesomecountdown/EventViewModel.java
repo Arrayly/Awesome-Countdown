@@ -14,7 +14,7 @@ public class EventViewModel extends AndroidViewModel {
 
     private MutableLiveData<Long> eventOrderID;
 
-    public MutableLiveData<List<Event>> getEventByIdResult = new MutableLiveData<>();
+    public MutableLiveData<List<Event>> getEventByIdResult;
 
     public EventViewModel(@NonNull final Application application) {
         super(application);

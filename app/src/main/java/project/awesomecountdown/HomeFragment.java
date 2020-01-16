@@ -3,6 +3,7 @@ package project.awesomecountdown;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -51,6 +52,8 @@ public class HomeFragment extends ModelFragment implements MyConstants, BottomSh
     private long chosenEventId;
 
     private int chosenEventPosition;
+
+    private boolean isEventOrderSorted;
 
 
     public HomeFragment() {
@@ -223,6 +226,7 @@ public class HomeFragment extends ModelFragment implements MyConstants, BottomSh
     };
 
     private void sortList() {
+        isEventOrderSorted = true;
         for (int x = 0; x < sortedEventList.size(); x++) {
             sortedEventList.get(x).setEventOrderId(sortedEventList.size() - x);
         }
@@ -236,19 +240,23 @@ public class HomeFragment extends ModelFragment implements MyConstants, BottomSh
         if (resultCode == getActivity().RESULT_OK) {
             if (requestCode == mConstants.REQUEST_NEW_EVENT) {
                 Toast.makeText(getActivity(), "Event successfully created!", Toast.LENGTH_SHORT).show();
-            }else if (requestCode == mConstants.REQUEST_EDIT_EVENT){
+            } else if (requestCode == mConstants.REQUEST_EDIT_EVENT) {
                 Toast.makeText(getActivity(), "Event successfuly updated!", Toast.LENGTH_SHORT).show();
             }
         }
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
+    public void onStop() {
+        super.onStop();
+
         mEventViewModel.updateEvent(sortedEventList);
 
-        for (int x = 0; x<deletedEventIDs.size(); x++){
-            mEventViewModel.deleteEventById(deletedEventIDs.get(x));
+        if (deletedEventIDs.size() != 0) {
+            for (int x = 0; x < deletedEventIDs.size(); x++) {
+                mEventViewModel.deleteEventById(deletedEventIDs.get(x));
+            }
         }
     }
 }
+

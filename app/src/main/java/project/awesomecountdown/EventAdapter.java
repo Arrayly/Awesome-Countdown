@@ -21,6 +21,8 @@ public class EventAdapter extends ListAdapter<Event, ViewHolder> {
 
     private EventClickedListener mListener;
 
+    private EventExpiredListener mExpiredListener;
+
     private long timeLeftInMillis, futureMillis;
 
     private Context mContext;
@@ -67,17 +69,15 @@ public class EventAdapter extends ListAdapter<Event, ViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull final EventAdapter.ViewHolder holder, final int position) {
         Log.i("ADAPTER", "onBindViewHolder: ");
-        Event event = getItem(position);
+        final Event event = getItem(position);
 
-        holder.title.setText("T: " + event.getEventTitle());
-        holder.time.setText("RV POS: " + event.getEventOrderId());
-        holder.id.setText("ID: " + event.getID());
-
+        holder.title.setText(event.getEventTitle());
+        holder.id.setText("ID = " + event.getID());
 
         futureMillis = event.getMillisLeft();
         timeLeftInMillis = futureMillis - System.currentTimeMillis();
 
-        if (holder.mCountDownTimer!=null){
+        if (holder.mCountDownTimer != null) {
             holder.mCountDownTimer.cancel();
         }
 
@@ -85,18 +85,25 @@ public class EventAdapter extends ListAdapter<Event, ViewHolder> {
             @Override
             public void onTick(final long millisUntilFinished) {
                 timeLeftInMillis = millisUntilFinished;
-                updateView(timeLeftInMillis, holder);
+                updateView(timeLeftInMillis, holder, event.getID());
             }
 
             @Override
             public void onFinish() {
+                int position = holder.getAdapterPosition();
+
+                Log.i("TAG", "onFinish: " + position);
+
+//                if (mExpiredListener != null && position!= RecyclerView.NO_POSITION) {
+//                    mExpiredListener.onExpired(position);
+//                }
 
             }
         }.start();
     }
 
 
-    private void updateView(final long timeLeft, final ViewHolder holder) {
+    private void updateView(final long timeLeft, final ViewHolder holder, final long eventId) {
 
         final long day = TimeUnit.MILLISECONDS.toDays(timeLeft);
 
@@ -109,10 +116,17 @@ public class EventAdapter extends ListAdapter<Event, ViewHolder> {
         final long seconds = TimeUnit.MILLISECONDS.toSeconds(timeLeft)
                 - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(timeLeft));
 
-        holder.seconds.setText(String.format(Locale.getDefault(), "%d s", seconds));
-        holder.minutes.setText(String.format(Locale.getDefault(), "%d min", minutes));
-        holder.hours.setText(String.format(Locale.getDefault(), "%d hrs", hours));
-        holder.days.setText(day + "d");
+        if (day >= 1) {
+            holder.time.setText(String.format(Locale.getDefault(), "%d days", day));
+        } else if (hours >= 1) {
+            holder.time.setText(String.format(Locale.getDefault(), "%d hrs", hours));
+        } else if (minutes >= 1) {
+            holder.time.setText(String.format(Locale.getDefault(), "%d min", minutes));
+        } else if (seconds >= 1) {
+            holder.time.setText(String.format(Locale.getDefault(), "%d sec", seconds));
+        } else {
+            holder.time.setText("DONE!");
+        }
 
     }
 
@@ -123,7 +137,8 @@ public class EventAdapter extends ListAdapter<Event, ViewHolder> {
         CountDownTimer mCountDownTimer;
 
 
-        private TextView title, time, id, days, hours, minutes, seconds;
+        private TextView title, id, time;
+
 
         public ViewHolder(@NonNull final View itemView) {
             super(itemView);
@@ -131,12 +146,8 @@ public class EventAdapter extends ListAdapter<Event, ViewHolder> {
             Log.i("ADAPTER", "ViewHolder: ");
 
             title = itemView.findViewById(R.id.event_rv_title_txv);
-            time = itemView.findViewById(R.id.event_rv_time_txv);
             id = itemView.findViewById(R.id.event_rv_id_txv);
-            days = itemView.findViewById(R.id.displayDays_txtView);
-            minutes = itemView.findViewById(R.id.displayMinutes_txtView);
-            seconds = itemView.findViewById(R.id.displaySeconds_txtView);
-            hours = itemView.findViewById(R.id.display_hours_txtview);
+            time = itemView.findViewById(R.id.display_time_txtview);
 
             itemView.setOnClickListener(new OnClickListener() {
                 @Override
@@ -154,10 +165,18 @@ public class EventAdapter extends ListAdapter<Event, ViewHolder> {
     public interface EventClickedListener {
 
         void onClick(int position);
+    }
 
+    public interface EventExpiredListener {
+
+        void onExpired(int position);
     }
 
     public void setEventClickedListener(EventClickedListener listener) {
         mListener = listener;
+    }
+
+    public void setEventExpiredListener(EventExpiredListener listener) {
+        mExpiredListener = listener;
     }
 }

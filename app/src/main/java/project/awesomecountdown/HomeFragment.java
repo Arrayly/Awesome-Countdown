@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import project.awesomecountdown.EventAdapter.EventClickedListener;
+import project.awesomecountdown.EventAdapter.EventExpiredListener;
 import project.awesomecountdown.MainActivity.ClickHandler;
 import project.awesomecountdown.databinding.FragmentHomeBinding;
 
@@ -144,7 +145,24 @@ public class HomeFragment extends ModelFragment implements MyConstants, BottomSh
 
             }
         });
+
+        mEventAdapter.setEventExpiredListener(new EventExpiredListener() {
+            @Override
+            public void onExpired(final int position) {
+                Toast.makeText(getActivity(),
+                        "EXPIRED POSITION: " + position + "\n" + "ID: " + sortedEventList.get(position).getID(),
+                        Toast.LENGTH_SHORT).show();
+                Log.i("EXP", "EXPIRED POSITION: " + position + "\n" + "ID: " + sortedEventList.get(position).getID());
+
+//                deleteExpiredEvent(position);
+
+
+            }
+        });
+
+
     }
+
 
     @Override
     public void OnBottomSheetSelected(final int position) {
@@ -177,6 +195,20 @@ public class HomeFragment extends ModelFragment implements MyConstants, BottomSh
         mEventAdapter.submitList(sortedEventList);
         mEventAdapter.notifyDataSetChanged();
         showUndoSnackBar();
+    }
+
+    private void deleteExpiredEvent(final int position) {
+        recentlyDeletedEvent.clear();
+        recentlyDeletedEvent.add(0, sortedEventList.get(position));
+        deletedEventIDs.add(0, sortedEventList.get(position).getID());
+
+        ExpiredEvents expiredEvents = new ExpiredEvents(sortedEventList.get(position).getEventTitle(),
+                sortedEventList.get(position).getMillisLeft());
+        mEventViewModel.addExpiredEvent(expiredEvents);
+
+        sortedEventList.remove(position);
+        mEventAdapter.submitList(sortedEventList);
+        mEventAdapter.notifyDataSetChanged();
     }
 
     private void undoDelete() {

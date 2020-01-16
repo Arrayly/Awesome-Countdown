@@ -1,4 +1,5 @@
 package project.awesomecountdown;
+
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
@@ -27,11 +28,12 @@ public class Event {
     @ColumnInfo(name = "eventTitle")
     private String eventTitle;
 
-    public Event(final long eventOrderId,final long millisLeft,@NonNull final String eventTitle) {
+    public Event(final long eventOrderId, final long millisLeft, @NonNull final String eventTitle) {
         this.millisLeft = millisLeft;
         this.eventTitle = eventTitle;
         this.eventOrderId = eventOrderId;
     }
+
 
     public boolean isAlertSet() {
         return alertSet;

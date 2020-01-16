@@ -6,11 +6,14 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import java.util.List;
+
 public class EventViewModel extends AndroidViewModel {
 
     private EventRepository mEventRepository;
 
     private LiveData<List<Event>> getEvent;
+
+    private LiveData<List<ExpiredEvents>> getExpiredEvents;
 
     private MutableLiveData<Long> eventOrderID;
 
@@ -20,28 +23,31 @@ public class EventViewModel extends AndroidViewModel {
         super(application);
         mEventRepository = new EventRepository(application);
         getEvent = mEventRepository.getEvent();
+        getExpiredEvents = mEventRepository.getExpiredEvents();
         eventOrderID = mEventRepository.getEventOrderID();
         getEventByIdResult = mEventRepository.getEventByIdResult;
     }
 
-    public LiveData<List<Event>> getEvent(){
+    //Current Events
+
+    public LiveData<List<Event>> getEvent() {
         return this.getEvent;
     }
 
-    public void deleteAllEvents(){
+    public void deleteAllEvents() {
         mEventRepository.deleteAllEvents();
 
     }
 
-    public void getEventById(long id){
+    public void getEventById(long id) {
         mEventRepository.getEventById(id);
     }
 
-    public void deleteEventById(long id){
+    public void deleteEventById(long id) {
         mEventRepository.deleteEventById(id);
     }
 
-    public void queryMaxOrderID(){
+    public void queryMaxOrderID() {
         mEventRepository.getEventMaxOrderID();
     }
 
@@ -49,16 +55,34 @@ public class EventViewModel extends AndroidViewModel {
         return eventOrderID;
     }
 
-    public void addEvent(Event event){
+    public void addEvent(Event event) {
         mEventRepository.addEvent(event);
     }
 
-    public void updateEvent(List<Event> event){
+    public void updateEvent(List<Event> event) {
         mEventRepository.updateEvent(event);
     }
 
-    public void updateEditedEvent(Event event){
+    public void updateEditedEvent(Event event) {
         mEventRepository.updateEditedEvent(event);
     }
+
+    public LiveData<List<ExpiredEvents>> getExpiredEvents() {
+        return this.getExpiredEvents;
+    }
+
+    public void addExpiredEvent(ExpiredEvents expiredEvents) {
+        mEventRepository.addExpiredEvent(expiredEvents);
+    }
+
+    public void deleteAllExpiredEvents() {
+        mEventRepository.deleteAllExpiredEvents();
+    }
+
+    public void deleteExpiredEventById(long id) {
+        mEventRepository.deleteExpiredEventById(id);
+
+    }
 }
+
 

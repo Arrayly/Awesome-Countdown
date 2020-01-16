@@ -22,6 +22,7 @@ import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.viewpager.widget.ViewPager;
+import com.airbnb.lottie.LottieAnimationView;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 import project.awesomecountdown.AddEditActivity.ClickHandler;
@@ -108,6 +109,8 @@ public class MainActivity extends ModelActivity implements MyConstants {
             manager.createNotificationChannel(channel);
         }
     }
+
+
 
 
     public class ClickHandler {

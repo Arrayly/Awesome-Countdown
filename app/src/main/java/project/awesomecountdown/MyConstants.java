@@ -2,10 +2,11 @@ package project.awesomecountdown;
 
 public interface MyConstants {
 
-    int REQUEST_NEW_EVENT = 1, DEFAULT_VALUE = 0, REQUEST_EDIT_EVENT = 2;
+    int DEFAULT_VALUE = 0, REQUEST_NEW_EVENT = 1, REQUEST_EDIT_EVENT = 2, REQUEST_UPDATE_EVENT = 3;
 
     String CHOSEN_TIME = "CHOSEN_TIME",
-            CHOSEN_EVENT = "CHOSEN_EVENT",
+            CHOSEN_EVENT_ID = "CHOSEN_EVENT_ID",
+            CHOSEN_EXPIRED_EVENT_ID = "CHOSEN_EXPIRED_EVENT_ID",
             CHANNEL_ID = "CHANNEL_ID",
             CHANNEL_NAME = "CHANNEL_NAME",
             CHANNEL_DESCRIPTION = "CHANNEL_DESCRIPTION!",

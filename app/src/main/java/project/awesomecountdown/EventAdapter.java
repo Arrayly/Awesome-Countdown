@@ -90,13 +90,13 @@ public class EventAdapter extends ListAdapter<Event, ViewHolder> {
 
             @Override
             public void onFinish() {
-                int position = holder.getAdapterPosition();
+                long id = getItem(holder.getAdapterPosition()).getID();
 
-                Log.i("TAG", "onFinish: " + position);
+                Log.i("TAG", "onFinish: " + id);
 
-//                if (mExpiredListener != null && position!= RecyclerView.NO_POSITION) {
-//                    mExpiredListener.onExpired(position);
-//                }
+                if (mExpiredListener != null && position!= RecyclerView.NO_POSITION) {
+                    mExpiredListener.onExpired(id);
+                }
 
             }
         }.start();
@@ -169,7 +169,7 @@ public class EventAdapter extends ListAdapter<Event, ViewHolder> {
 
     public interface EventExpiredListener {
 
-        void onExpired(int position);
+        void onExpired(long id);
     }
 
     public void setEventClickedListener(EventClickedListener listener) {

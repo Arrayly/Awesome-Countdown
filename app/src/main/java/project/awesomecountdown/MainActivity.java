@@ -11,7 +11,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.Toast;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import androidx.appcompat.widget.Toolbar;
@@ -169,6 +171,18 @@ public class MainActivity extends ModelActivity implements MyConstants {
             mTransactionViewModel.setDeleteAllEventsSelected(true);
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onActivityResult(final int requestCode, final int resultCode, @Nullable final Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK) {
+            if (requestCode == REQUEST_NEW_EVENT) {
+                Toast.makeText(this, "Event successfully created!", Toast.LENGTH_SHORT).show();
+            } else if (requestCode == REQUEST_EDIT_EVENT) {
+                Toast.makeText(this, "Event successfuly updated!", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 }
 

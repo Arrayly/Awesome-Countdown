@@ -19,6 +19,8 @@ public class EventViewModel extends AndroidViewModel {
 
     public MutableLiveData<List<Event>> getEventByIdResult;
 
+    public MutableLiveData<List<ExpiredEvents>> getExpiredEventByIdResult;
+
     public EventViewModel(@NonNull final Application application) {
         super(application);
         mEventRepository = new EventRepository(application);
@@ -26,6 +28,7 @@ public class EventViewModel extends AndroidViewModel {
         getExpiredEvents = mEventRepository.getExpiredEvents();
         eventOrderID = mEventRepository.getEventOrderID();
         getEventByIdResult = mEventRepository.getEventByIdResult;
+        getExpiredEventByIdResult = mEventRepository.getExpiredEventByIdResult;
     }
 
     //Current Events
@@ -67,6 +70,9 @@ public class EventViewModel extends AndroidViewModel {
         mEventRepository.updateEditedEvent(event);
     }
 
+
+    //Expired Events
+
     public LiveData<List<ExpiredEvents>> getExpiredEvents() {
         return this.getExpiredEvents;
     }
@@ -82,6 +88,10 @@ public class EventViewModel extends AndroidViewModel {
     public void deleteExpiredEventById(long id) {
         mEventRepository.deleteExpiredEventById(id);
 
+    }
+
+    public void getExpiredEventById(long id) {
+        mEventRepository.getExpiredEventById(id);
     }
 }
 

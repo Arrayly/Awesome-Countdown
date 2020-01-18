@@ -3,7 +3,7 @@ package project.awesomecountdown;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
+import android.os.Handler;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -21,9 +21,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.ListIterator;
 import project.awesomecountdown.EventAdapter.EventClickedListener;
 import project.awesomecountdown.EventAdapter.EventExpiredListener;
-import project.awesomecountdown.MainActivity.ClickHandler;
 import project.awesomecountdown.databinding.FragmentHomeBinding;
 
 
@@ -53,8 +53,6 @@ public class HomeFragment extends ModelFragment implements MyConstants, BottomSh
     private long chosenEventId;
 
     private int chosenEventPosition;
-
-    private boolean isEventOrderSorted;
 
 
     public HomeFragment() {
@@ -138,7 +136,6 @@ public class HomeFragment extends ModelFragment implements MyConstants, BottomSh
             public void onClick(int position) {
                 chosenEventPosition = position;
                 chosenEventId = sortedEventList.get(position).getID();
-                long orderId = sortedEventList.get(position).getEventOrderId();
                 Toast.makeText(getActivity(), "ID: " + chosenEventId, Toast.LENGTH_SHORT)
                         .show();
                 showBottomSheetDialog();
@@ -148,21 +145,16 @@ public class HomeFragment extends ModelFragment implements MyConstants, BottomSh
 
         mEventAdapter.setEventExpiredListener(new EventExpiredListener() {
             @Override
-            public void onExpired(final int position) {
-                Toast.makeText(getActivity(),
-                        "EXPIRED POSITION: " + position + "\n" + "ID: " + sortedEventList.get(position).getID(),
-                        Toast.LENGTH_SHORT).show();
-                Log.i("EXP", "EXPIRED POSITION: " + position + "\n" + "ID: " + sortedEventList.get(position).getID());
-
-//                deleteExpiredEvent(position);
-
-
+            public void onExpired(final long id) {
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        deleteExpiredEvent(id);
+                    }
+                }, 100);
             }
         });
-
-
     }
-
 
     @Override
     public void OnBottomSheetSelected(final int position) {
@@ -182,7 +174,7 @@ public class HomeFragment extends ModelFragment implements MyConstants, BottomSh
 
     private void editEvent() {
         Intent intent = new Intent(getActivity(), AddEditActivity.class);
-        intent.putExtra(mConstants.CHOSEN_EVENT, chosenEventId);
+        intent.putExtra(mConstants.CHOSEN_EVENT_ID, chosenEventId);
         startActivityForResult(intent, mConstants.REQUEST_EDIT_EVENT);
 
     }
@@ -197,18 +189,22 @@ public class HomeFragment extends ModelFragment implements MyConstants, BottomSh
         showUndoSnackBar();
     }
 
-    private void deleteExpiredEvent(final int position) {
-        recentlyDeletedEvent.clear();
-        recentlyDeletedEvent.add(0, sortedEventList.get(position));
-        deletedEventIDs.add(0, sortedEventList.get(position).getID());
+    private void deleteExpiredEvent(long id) {
 
-        ExpiredEvents expiredEvents = new ExpiredEvents(sortedEventList.get(position).getEventTitle(),
-                sortedEventList.get(position).getMillisLeft());
-        mEventViewModel.addExpiredEvent(expiredEvents);
+        ListIterator<Event> ev_iter = sortedEventList.listIterator();
+        while (ev_iter.hasNext()) {
+            Event ev = ev_iter.next();
+            if (ev.getID() == id) {
+                deletedEventIDs.add(id);
+                ExpiredEvents expiredEvents = new ExpiredEvents(ev.getEventTitle(), ev.getMillisLeft());
+                mEventViewModel.addExpiredEvent(expiredEvents);
+                ev_iter.remove();
+            }
+        }
 
-        sortedEventList.remove(position);
         mEventAdapter.submitList(sortedEventList);
         mEventAdapter.notifyDataSetChanged();
+
     }
 
     private void undoDelete() {
@@ -258,25 +254,12 @@ public class HomeFragment extends ModelFragment implements MyConstants, BottomSh
     };
 
     private void sortList() {
-        isEventOrderSorted = true;
         for (int x = 0; x < sortedEventList.size(); x++) {
             sortedEventList.get(x).setEventOrderId(sortedEventList.size() - x);
         }
 
     }
 
-    @Override
-    public void onActivityResult(final int requestCode, final int resultCode, @Nullable final Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (resultCode == getActivity().RESULT_OK) {
-            if (requestCode == mConstants.REQUEST_NEW_EVENT) {
-                Toast.makeText(getActivity(), "Event successfully created!", Toast.LENGTH_SHORT).show();
-            } else if (requestCode == mConstants.REQUEST_EDIT_EVENT) {
-                Toast.makeText(getActivity(), "Event successfuly updated!", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
 
     @Override
     public void onStop() {

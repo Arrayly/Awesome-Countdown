@@ -1,6 +1,7 @@
 package project.awesomecountdown;
 
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Toast;
 import androidx.annotation.Nullable;
@@ -92,7 +93,9 @@ public class ArchiveFragment extends ModelFragment implements MyConstants {
             @Override
             public void OnClick(final int position) {
                 chosenExpiredEventId = mExpiredEvents.get(position).getID();
-                Toast.makeText(getActivity(), "ID: " + chosenExpiredEventId, Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(getActivity(),AddEditActivity.class);
+                intent.putExtra(CHOSEN_EXPIRED_EVENT_ID,chosenExpiredEventId);
+                startActivityForResult(intent,REQUEST_UPDATE_EVENT);
             }
         });
 

@@ -23,6 +23,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import android.os.Bundle;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.widget.TextViewCompat.AutoSizeTextType;
 import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
@@ -51,9 +52,9 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
 
     private List<Event> mEventList = new ArrayList<>();
 
-    private boolean isEventEditing, alertSet, isAlertSetInDatabase;
+    private boolean isEventEditing, isAlertSetInActivity, isAlertSetInDatabase, isExpiredEventBeingUpdated;
 
-    private long eventEditId, eventOrderId, notificationId;
+    private long eventEditId, eventOrderId, notificationId, eventExpiredId;
 
 
     private void showDatePickerDialog() {
@@ -173,7 +174,7 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
         mBinding.alertSwitch.setOnCheckedChangeListener(new OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(final CompoundButton buttonView, final boolean isChecked) {
-                alertSet = isChecked;
+                isAlertSetInActivity = isChecked;
                 Toast.makeText(AddEditActivity.this, "Alert set Succesfully!", Toast.LENGTH_SHORT).show();
             }
         });
@@ -190,57 +191,102 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
         mViewModel.getEventByIdResult.observe(this, new Observer<List<Event>>() {
             @Override
             public void onChanged(final List<Event> events) {
-                mEventList.clear();
-                mEventList.addAll(events);
-                long millis = 0;
-                for (Event event : events) {
-                    charInput = event.getEventTitle();
-                    eventEditId = event.getID();
-                    eventOrderId = event.getEventOrderId();
-                    isAlertSetInDatabase = event.isAlertSet();
-                    notificationId = event.getNotificationId();
-                    millis = event.getMillisLeft();
-                }
+                processDbResult(null, events);
+            }
+        });
 
-                if (isAlertSetInDatabase){
-                    alertSet = true;
-                    mBinding.alertSwitch.toggle();
-                }
-
-                Calendar c = Calendar.getInstance();
-                c.setTimeInMillis(millis);
-
-                mYear = c.get(Calendar.YEAR);
-                mMonth = c.get(Calendar.MONTH);
-                mDay = c.get(Calendar.DAY_OF_MONTH);
-                mHour = c.get(Calendar.HOUR);
-                mMinute = c.get(Calendar.MINUTE);
-
-                updateDateUI();
-                updateTimeUI();
-                updateEventNameUI();
-
-
+        mViewModel.getExpiredEventByIdResult.observe(this, new Observer<List<ExpiredEvents>>() {
+            @Override
+            public void onChanged(final List<ExpiredEvents> expiredEvents) {
+                processDbResult(expiredEvents, null);
             }
         });
 
 
     }
 
+    private void processDbResult(final List<ExpiredEvents> expiredEvents, final List<Event> currentEvent) {
+        mEventList.clear();
+        long millis = 0;
+
+        if (expiredEvents != null) {
+
+            for (ExpiredEvents expired : expiredEvents) {
+                charInput = expired.getEventTitle();
+                eventExpiredId = expired.getID();
+                millis = expired.getMillisLeft();
+            }
+
+            isExpiredEventBeingUpdated = true;
+            setUpUi(millis);
+
+
+        } else if (currentEvent != null) {
+            mEventList.addAll(currentEvent);
+
+            for (Event event : currentEvent) {
+                charInput = event.getEventTitle();
+                eventEditId = event.getID();
+                eventOrderId = event.getEventOrderId();
+                isAlertSetInDatabase = event.isAlertSet();
+                notificationId = event.getNotificationId();
+                millis = event.getMillisLeft();
+            }
+
+            if (isAlertSetInDatabase) {
+                isAlertSetInActivity = true;
+                mBinding.alertSwitch.toggle();
+            }
+
+            setUpUi(millis);
+
+        }
+
+
+    }
+
+    private void setUpUi(long millis) {
+        Calendar c = Calendar.getInstance();
+        c.setTimeInMillis(millis);
+
+        mYear = c.get(Calendar.YEAR);
+        mMonth = c.get(Calendar.MONTH);
+        mDay = c.get(Calendar.DAY_OF_MONTH);
+        mHour = c.get(Calendar.HOUR_OF_DAY);
+        mMinute = c.get(Calendar.MINUTE);
+
+        updateDateUI();
+        updateTimeUI();
+        updateEventNameUI();
+
+    }
+
+
     private void checkIntent() {
         Intent intent = getIntent();
-        if (intent.hasExtra(mConstants.CHOSEN_EVENT)) {
+        if (intent.hasExtra(CHOSEN_EVENT_ID)) {
             setTitle("Edit Event");
-            long id = intent.getLongExtra(mConstants.CHOSEN_EVENT, 0);
+            long id = intent.getLongExtra(mConstants.CHOSEN_EVENT_ID, 0);
             if (id != 0) {
                 isEventEditing = true;
                 getEventFromDb(id);
             }
+        } else if (intent.hasExtra(CHOSEN_EXPIRED_EVENT_ID)) {
+            setTitle("Update Event");
+            long id = intent.getLongExtra(CHOSEN_EXPIRED_EVENT_ID, 0);
+            if (id != 0) {
+                getExpiredEventFromDb(id);
+            }
         }
     }
 
+
     private void getEventFromDb(final long id) {
         mViewModel.getEventById(id);
+    }
+
+    private void getExpiredEventFromDb(final long id) {
+        mViewModel.getExpiredEventById(id);
     }
 
     @Override
@@ -283,7 +329,7 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
 
     private void validationProcessor() {
         Calendar c = Calendar.getInstance();
-        c.set(mYear, mMonth, mDay, mHour, mMinute, mConstants.DEFAULT_VALUE);
+        c.set(mYear, mMonth, mDay, mHour, mMinute,DEFAULT_VALUE);
         long chosenMillis = c.getTimeInMillis();
         long currentMillis = System.currentTimeMillis();
         long diff = chosenMillis - currentMillis;
@@ -311,31 +357,36 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
         event.setID(eventEditId);
 
         //Cancel notification
-        if (!alertSet && isAlertSetInDatabase) {
+        if (!isAlertSetInActivity && isAlertSetInDatabase) {
             event.setAlertSet(false);
             cancelNotification();
             event.setAlertSet(false);
 
             //update Notification
-        }else{
+        } else {
             setNotification();
         }
-            mViewModel.updateEditedEvent(event);
-            finishActivity();
-
+        mViewModel.updateEditedEvent(event);
+        finishActivity();
 
 
     }
 
+
     private void saveData() {
         Event event = new Event(eventOrderId, futureTime, chosenTitle);
-        if (alertSet) {
+        if (isAlertSetInActivity) {
             event.setAlertSet(true);
             event.setNotificationId(notificationId);
             setNotification();
         }
 
         mViewModel.addEvent(event);
+
+        if (isExpiredEventBeingUpdated){
+            mViewModel.deleteExpiredEventById(eventExpiredId);
+        }
+
         finishActivity();
     }
 
@@ -348,9 +399,9 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
             public void run() {
                 Intent intent = new Intent(AddEditActivity.this, ReminderBroadcast.class);
                 intent.putExtra(BROADCAST_TITLE, chosenTitle);
-                intent.putExtra(BROADCAST_ID_IDENTITY,notificationId);
+                intent.putExtra(BROADCAST_ID_IDENTITY, notificationId);
 
-                Log.i("BROADCAST", "setNotification " + notificationId + " Event TITLE: "+ chosenTitle);
+                Log.i("BROADCAST", "setNotification " + notificationId + " Event TITLE: " + chosenTitle);
 
                 PendingIntent pendingIntent = PendingIntent
                         .getBroadcast(AddEditActivity.this, (int) notificationId, intent,
@@ -372,7 +423,7 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
                 AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
                 Intent intent = new Intent(AddEditActivity.this, ReminderBroadcast.class);
                 Log.i("BROADCAST", "cancelNotification: ID = " + notificationId);
-                intent.putExtra(BROADCAST_ID_IDENTITY,notificationId);
+                intent.putExtra(BROADCAST_ID_IDENTITY, notificationId);
 
                 PendingIntent pendingIntent = PendingIntent
                         .getBroadcast(AddEditActivity.this, (int) notificationId, intent,
@@ -400,10 +451,12 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
         outState.putLong("eventEditId", eventEditId);
         outState.putLong("eventOrderId", eventOrderId);
         outState.putLong("notificationId", notificationId);
+        outState.putLong("eventExpiredId", eventExpiredId);
 
         outState.putBoolean("isEventEditing", isEventEditing);
-        outState.putBoolean("alertSet", alertSet);
+        outState.putBoolean("isAlertSetInActivity", isAlertSetInActivity);
         outState.putBoolean("isAlertSetInDatabase", isAlertSetInDatabase);
+        outState.putBoolean("isExpiredEventBeingUpdated", isExpiredEventBeingUpdated);
     }
 
     private void loadDestroyedData(final Bundle savedInstanceState) {
@@ -418,10 +471,12 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
         eventEditId = savedInstanceState.getLong("eventEditId", mConstants.DEFAULT_VALUE);
         eventOrderId = savedInstanceState.getLong("eventOrderId", mConstants.DEFAULT_VALUE);
         notificationId = savedInstanceState.getLong("notificationId", mConstants.DEFAULT_VALUE);
+        eventExpiredId = savedInstanceState.getLong("eventExpiredId", mConstants.DEFAULT_VALUE);
 
         isEventEditing = savedInstanceState.getBoolean("isEventEditing", isEventEditing);
-        alertSet = savedInstanceState.getBoolean("alertSet", alertSet);
+        isAlertSetInActivity = savedInstanceState.getBoolean("isAlertSetInActivity", isAlertSetInActivity);
         isAlertSetInDatabase = savedInstanceState.getBoolean("isAlertSetInDatabase", isAlertSetInDatabase);
+        isExpiredEventBeingUpdated = savedInstanceState.getBoolean("isExpiredEventBeingUpdated", isExpiredEventBeingUpdated);
 
         updateDateUI();
         updateTimeUI();
@@ -448,5 +503,11 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
 
     private void updateEventNameUI() {
         mBinding.inputNameEtext.setText(charInput);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.i("cycle", "onDestroy: ");
     }
 }

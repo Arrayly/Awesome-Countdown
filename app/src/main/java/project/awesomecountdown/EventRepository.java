@@ -18,6 +18,8 @@ public class EventRepository {
 
     public MutableLiveData<List<Event>> getEventByIdResult = new MutableLiveData<>();
 
+    public MutableLiveData<List<ExpiredEvents>> getExpiredEventByIdResult = new MutableLiveData<>();
+
     private MutableLiveData<Long> eventOrderID = new MutableLiveData<>();
 
     public EventRepository(Application application) {
@@ -84,6 +86,10 @@ public class EventRepository {
 
     public void deleteExpiredEventById(long id) {
         new deleteExpiredEventByIdAsyncTask(mExpiredEventDao).execute(id);
+    }
+
+    public void getExpiredEventById(long id) {
+        new getExpiredEventByIdAsyncTask(mExpiredEventDao).execute(id);
     }
 
 
@@ -249,6 +255,26 @@ public class EventRepository {
         protected Void doInBackground(final Long... longs) {
             mAsyncDao.deleteExpiredEventById(longs[0]);
             return null;
+        }
+    }
+
+    public class getExpiredEventByIdAsyncTask extends AsyncTask<Long, Void, List<ExpiredEvents>> {
+
+        private ExpiredEventDao mAsyncDao;
+
+        public getExpiredEventByIdAsyncTask(final ExpiredEventDao dao) {
+            mAsyncDao = dao;
+        }
+
+        @Override
+        protected List<ExpiredEvents> doInBackground(final Long... longs) {
+            return mAsyncDao.getExpiredEventById(longs[0]);
+        }
+
+        @Override
+        protected void onPostExecute(final List<ExpiredEvents> expiredEvents) {
+            super.onPostExecute(expiredEvents);
+            getExpiredEventByIdResult.setValue(expiredEvents);
         }
     }
 }

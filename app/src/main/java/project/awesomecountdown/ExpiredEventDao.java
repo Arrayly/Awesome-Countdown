@@ -1,11 +1,13 @@
 package project.awesomecountdown;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import java.util.List;
+import java.util.ListIterator;
 
 @Dao
 public interface ExpiredEventDao {
@@ -21,4 +23,9 @@ public interface ExpiredEventDao {
 
     @Query("DELETE FROM Expired_Event_Table")
     void deleteAllExpiredEvents();
+
+    @NonNull
+    @Query("SELECT * FROM expired_event_table WHERE ID = :id")
+    List<ExpiredEvents> getExpiredEventById(long id);
+
 }

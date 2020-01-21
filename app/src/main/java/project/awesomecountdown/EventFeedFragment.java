@@ -2,18 +2,21 @@ package project.awesomecountdown;
 
 
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 import androidx.annotation.Nullable;
-import androidx.annotation.PluralsRes;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout.OnRefreshListener;
 import java.util.ArrayList;
 import java.util.List;
 import project.awesomecountdown.EventFeedAdapter.EventFeedClickListener;
@@ -24,25 +27,33 @@ import project.awesomecountdown.ticketmaster.model.embedded.TicketMasterEvents;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class EventFeedFragment extends ModelFragment implements MyConstants {
+public class EventFeedFragment extends ModelFragment
+        implements MyConstants, BottomSheetDialogFeedFragment.FeedFragmentBottomSheetListener {
 
-    private String ticketMasterDynamicUrl
+    private String ticketMasterGetAllEvents
             = "discovery/v2/events?apikey=q6Qkd179SUqRysAMvAQMdopTkmaKXa3J&locale=*&countryCode=GB";
+
+    private String ticketMasterSearchEvents
+            = "https://app.ticketmaster.com/discovery/v2/events?apikey=q6Qkd179SUqRysAMvAQMdopTkmaKXa3J&keyword={search}&locale=*&city=London";
 
     private FragmentEventFeedBinding mBinding;
 
     private EventViewModel mEventViewModel;
 
+    private DataTransactionViewModel mTransactionViewModel;
+
     private EventFeedAdapter mFeedAdapter;
 
     private List<EventFeedDetails> mEventFeedDetails = new ArrayList<>();
+
+    private boolean onRefresh;
+
+    private int adapterPositionOfItemSelected;
 
     public EventFeedFragment() {
         // Required empty public constructor
@@ -63,39 +74,84 @@ public class EventFeedFragment extends ModelFragment implements MyConstants {
     }
 
     @Override
+    public void onBottomSheetItemSelected(final int position) {
+        switch (position) {
+
+            //Add event to countdown selected
+            case 1:
+                Toast.makeText(getActivity(), "add event!", Toast.LENGTH_SHORT).show();
+
+                break;
+
+            //Share event selected
+            case 2:
+                Toast.makeText(getActivity(), "Share event!", Toast.LENGTH_SHORT).show();
+                break;
+
+            //Browse event selected
+            case 3:
+                Toast.makeText(getActivity(), "browse event!", Toast.LENGTH_SHORT).show();
+                break;
+        }
+    }
+
+    @Override
     protected void onCreateInstances() {
         super.onCreateInstances();
+
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
+        mBinding.eventFeedRecycler.setLayoutManager(layoutManager);
+        mBinding.eventFeedRecycler.setItemAnimator(new DefaultItemAnimator());
     }
 
     @Override
     protected void onViewInit() {
         super.onViewInit();
-
-        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
-        mBinding.eventFeedRecycler.setLayoutManager(layoutManager);
-        mBinding.eventFeedRecycler.setItemAnimator(new DefaultItemAnimator());
-
     }
 
     @Override
     protected void onBindViewModel() {
         super.onBindViewModel();
         mEventViewModel = ViewModelProviders.of(getActivity()).get(EventViewModel.class);
+        mTransactionViewModel = ViewModelProviders.of(getActivity()).get(DataTransactionViewModel.class);
     }
 
     @Override
     protected void onFragmentInitFinished() {
         super.onFragmentInitFinished();
-        getFeed();
+        getFeed(ticketMasterGetAllEvents);
+
+        //Observe for SearchView queries being submitted - coming from main activity
+        mTransactionViewModel.searchQueryTabThree.observe(getViewLifecycleOwner(), new Observer<String>() {
+            @Override
+            public void onChanged(final String s) {
+                String search = s.trim();
+                String query = ticketMasterSearchEvents.replace("{search}", search);
+
+                getFeed(query);
+
+
+            }
+        });
+
+        mBinding.swipeRefreshEventfeed.setOnRefreshListener(new OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                onRefresh = true;
+                getFeed(ticketMasterGetAllEvents);
+            }
+        });
     }
 
-    private void getFeed() {
+    private void getFeed(String Url) {
 
         TicketMasterInterface ticketMasterInterface = RetrofitClient.getClient().create(TicketMasterInterface.class);
 
-        Call<Ticket> call = ticketMasterInterface.getTicketInfoGB(ticketMasterDynamicUrl);
+        Call<Ticket> call = ticketMasterInterface.getTicketInfoGB(Url);
 
-        mBinding.recyclerFeedProgressbar.setVisibility(View.VISIBLE);
+        if (!onRefresh) {
+            mBinding.swipeRefreshEventfeed.setRefreshing(true);
+        }
 
         call.enqueue(new Callback<Ticket>() {
             @Override
@@ -123,7 +179,7 @@ public class EventFeedFragment extends ModelFragment implements MyConstants {
                         eventUrl = in.getUrl();
                         eventLocalDate = in.getDates().getStart().getLocalDate();
                         eventLocalTime = in.getDates().getStart().getLocalTime();
-                        eventImage16_9 = in.getImages().get(0).getUrl();
+                        eventImage16_9 = in.getImages().get(1).getUrl();
                         eventLocationName = in.getVenueObject().getVenues().get(0).getLocationName();
                         eventPostalCode = in.getVenueObject().getVenues().get(0).getLocationPostalCode();
 
@@ -137,7 +193,8 @@ public class EventFeedFragment extends ModelFragment implements MyConstants {
                             new EventFeedClickListener() {
                                 @Override
                                 public void onClick(final int position) {
-                                    Toast.makeText(getActivity(), "position = " + position, Toast.LENGTH_SHORT).show();
+                                    adapterPositionOfItemSelected = position;
+                                    showBottomSheetDialog();
                                 }
                             });
 
@@ -145,7 +202,7 @@ public class EventFeedFragment extends ModelFragment implements MyConstants {
 
                     Toast.makeText(getActivity(), "Success!", Toast.LENGTH_SHORT).show();
 
-                    mBinding.recyclerFeedProgressbar.setVisibility(View.GONE);
+                    mBinding.swipeRefreshEventfeed.setRefreshing(false);
                 }
             }
 
@@ -155,5 +212,12 @@ public class EventFeedFragment extends ModelFragment implements MyConstants {
 
             }
         });
+    }
+
+    private void showBottomSheetDialog() {
+        BottomSheetDialogFeedFragment bottomSheet = new BottomSheetDialogFeedFragment();
+        bottomSheet.setFeedFragmentBottomSheetListener(this);
+        assert getFragmentManager() != null;
+        bottomSheet.show(getFragmentManager().beginTransaction(), "EXECUTE");
     }
 }

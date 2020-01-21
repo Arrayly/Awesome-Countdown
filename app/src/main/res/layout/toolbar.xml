@@ -5,7 +5,9 @@
     android:layout_width="match_parent"
     android:layout_height="?attr/actionBarSize"
     android:background="@color/colorAccent"
+    android:layout_alignParentTop="true"
     android:translationZ="5dp"
+    android:elevation="10dp"
     android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
 </androidx.appcompat.widget.Toolbar>

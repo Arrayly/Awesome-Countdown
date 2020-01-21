@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -17,6 +18,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
+import androidx.appcompat.widget.SearchView;
+import androidx.appcompat.widget.SearchView.OnQueryTextListener;
 import androidx.appcompat.widget.Toolbar;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
@@ -25,6 +28,7 @@ import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.viewpager.widget.ViewPager;
+import androidx.viewpager.widget.ViewPager.OnPageChangeListener;
 import com.airbnb.lottie.LottieAnimationView;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
@@ -33,7 +37,7 @@ import project.awesomecountdown.databinding.ActivityMainBinding;
 
 public class MainActivity extends ModelActivity implements MyConstants {
 
-    private static final String TAB_TITLES[] = new String[]{"Countdown","Archive","Feed"};
+    private static final String TAB_TITLES[] = new String[]{"Countdown", "Archive", "Feed"};
 
     private ActivityMainBinding mMainBinding;
 
@@ -44,6 +48,10 @@ public class MainActivity extends ModelActivity implements MyConstants {
     private ClickHandler mClickHandler;
 
     private DataTransactionViewModel mTransactionViewModel;
+
+    private ViewPager mViewPager;
+
+    private int viewPagerPosition;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,27 +72,32 @@ public class MainActivity extends ModelActivity implements MyConstants {
         mMainBinding = DataBindingUtil.setContentView(MainActivity.this, R.layout.activity_main);
         mMainBinding.setClickListener(mClickHandler);
 
-        mToolbar = findViewById(R.id.mainToolbar);
-        setSupportActionBar(mToolbar);
+        mToolbar = findViewById(R.id.customToolBar);
+
+        if (mToolbar != null) {
+            setSupportActionBar(mToolbar);
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setHomeButtonEnabled(true);
+            getSupportActionBar().setDisplayShowTitleEnabled(true);
+        }
 
         //Connect state pager to view with special state pager adapter
         SectionsPagerAdapter pagerAdapter =
                 new SectionsPagerAdapter(getSupportFragmentManager());
-        ViewPager pager = findViewById(R.id.MainActivity_ViewPager);
 
-        if (pager!=null) {
-            pager.setPageTransformer(true, new ZoomOutPageTransformer());
-            pager.setAdapter(pagerAdapter);
+        mViewPager = findViewById(R.id.MainActivity_ViewPager);
+
+        if (mViewPager != null) {
+            mViewPager.setPageTransformer(true, new ZoomOutPageTransformer());
+            mViewPager.setAdapter(pagerAdapter);
         }
 
-
         TabLayout tabLayout = findViewById(R.id.tabs);
-        if (tabLayout!=null) {
-            tabLayout.setupWithViewPager(pager);
+        if (tabLayout != null) {
+            tabLayout.setupWithViewPager(mViewPager);
         }
 
     }
-
 
 
     @Override
@@ -95,9 +108,10 @@ public class MainActivity extends ModelActivity implements MyConstants {
         mTransactionViewModel.showUndoSnackBar.observe(this, new Observer<Boolean>() {
             @Override
             public void onChanged(final Boolean aBoolean) {
-                if (aBoolean){
+                if (aBoolean) {
 
-                    Snackbar snackbar = Snackbar.make(mMainBinding.eventCoordinatorLayout, "Undo Delete", Snackbar.LENGTH_LONG)
+                    Snackbar snackbar = Snackbar
+                            .make(mMainBinding.eventCoordinatorLayout, "Undo Delete", Snackbar.LENGTH_LONG)
                             .setAction("UNDO", new OnClickListener() {
                                 @Override
                                 public void onClick(final View v) {
@@ -124,9 +138,30 @@ public class MainActivity extends ModelActivity implements MyConstants {
             NotificationManager manager = getSystemService(NotificationManager.class);
             manager.createNotificationChannel(channel);
         }
+
+        if (mViewPager != null) {
+
+            //Use this listener to identify which tabs we are on
+            mViewPager.addOnPageChangeListener(new OnPageChangeListener() {
+                @Override
+                public void onPageScrolled(final int position, final float positionOffset,
+                        final int positionOffsetPixels) {
+
+                }
+
+                @Override
+                public void onPageSelected(final int position) {
+                    viewPagerPosition = position;
+
+                }
+
+                @Override
+                public void onPageScrollStateChanged(final int state) {
+
+                }
+            });
+        }
     }
-
-
 
 
     public class ClickHandler {
@@ -143,7 +178,7 @@ public class MainActivity extends ModelActivity implements MyConstants {
         }
     }
 
-    private void startAddEditEventActivity(){
+    private void startAddEditEventActivity() {
         Intent intent = new Intent(MainActivity.this, AddEditActivity.class);
         startActivityForResult(intent, mMyConstants.REQUEST_NEW_EVENT);
     }
@@ -184,15 +219,12 @@ public class MainActivity extends ModelActivity implements MyConstants {
     public boolean onCreateOptionsMenu(final Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.home_menu, menu);
-        return true;
-    }
 
-    @Override
-    public boolean onOptionsItemSelected(@NonNull final MenuItem item) {
-        if (item.getItemId() == R.id.menu_home_removeAll) {
-            mTransactionViewModel.setDeleteAllEventsSelected(true);
-        }
-        return super.onOptionsItemSelected(item);
+        MenuItem item = menu.findItem(R.id.action_search);
+        SearchView searchView = (SearchView) item.getActionView();
+        searchView.setOnQueryTextListener(new SearchIconQueryListener());
+
+        return true;
     }
 
     @Override
@@ -204,6 +236,34 @@ public class MainActivity extends ModelActivity implements MyConstants {
             } else if (requestCode == REQUEST_EDIT_EVENT) {
                 Toast.makeText(this, "Event successfuly updated!", Toast.LENGTH_SHORT).show();
             }
+        }
+    }
+
+    //Listen for text changes in the search bar
+    private class SearchIconQueryListener implements OnQueryTextListener {
+
+        @Override
+        public boolean onQueryTextSubmit(final String query) {
+            switch (viewPagerPosition) {
+                case 0:
+                    mTransactionViewModel.searchQueryTabOne.setValue(query);
+                    break;
+
+                case 1:
+                    mTransactionViewModel.searchQueryTabTwo.setValue(query);
+                    break;
+
+                case 2:
+                    mTransactionViewModel.searchQueryTabThree.setValue(query);
+                    break;
+            }
+
+            return false;
+        }
+
+        @Override
+        public boolean onQueryTextChange(final String newText) {
+            return false;
         }
     }
 }

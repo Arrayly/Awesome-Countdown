@@ -30,7 +30,7 @@ import project.awesomecountdown.databinding.FragmentHomeBinding;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class HomeFragment extends ModelFragment implements MyConstants, BottomSheetDialog.BottomSheetListener {
+public class HomeFragment extends ModelFragment implements MyConstants, BottomSheetDialogHomeFragment.BottomSheetListener {
 
     private FragmentHomeBinding mHomeBinding;
 
@@ -219,9 +219,9 @@ public class HomeFragment extends ModelFragment implements MyConstants, BottomSh
     }
 
     private void showBottomSheetDialog() {
-        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog();
-        bottomSheetDialog.setListener(this);
-        bottomSheetDialog.show(getFragmentManager().beginTransaction(), "EXECUTE");
+        BottomSheetDialogHomeFragment bottomSheetDialogHomeFragment = new BottomSheetDialogHomeFragment();
+        bottomSheetDialogHomeFragment.setListener(this);
+        bottomSheetDialogHomeFragment.show(getFragmentManager().beginTransaction(), "EXECUTE");
     }
 
 

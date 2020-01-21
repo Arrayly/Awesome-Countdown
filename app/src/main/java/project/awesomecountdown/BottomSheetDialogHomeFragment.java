@@ -12,13 +12,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
-public class BottomSheetDialog extends BottomSheetDialogFragment {
+public class BottomSheetDialogHomeFragment extends BottomSheetDialogFragment {
 
     //Set the interface via our underlying fragment/activity
     private BottomSheetListener mListener;
 
-    public static BottomSheetDialog newInstance() {
-        BottomSheetDialog frag = new BottomSheetDialog();
+
+    public static BottomSheetDialogHomeFragment newInstance() {
+        BottomSheetDialogHomeFragment frag = new BottomSheetDialogHomeFragment();
         frag.getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         return frag;
     }
@@ -27,7 +28,7 @@ public class BottomSheetDialog extends BottomSheetDialogFragment {
     @Override
     public View onCreateView(@NonNull final LayoutInflater inflater, @Nullable final ViewGroup container,
             @Nullable final Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.modal_sheet, container,false);
+        View view = inflater.inflate(R.layout.modal_sheet_homefragment, container,false);
 
         TextView textView_edit = view.findViewById(R.id.edit_item_txtview);
         TextView textView_delete = view.findViewById(R.id.remove_item_txtview);

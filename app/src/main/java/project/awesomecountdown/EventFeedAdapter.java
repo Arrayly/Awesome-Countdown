@@ -5,9 +5,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import com.squareup.picasso.Picasso;
 import java.util.List;
 import project.awesomecountdown.ExpiredEventsAdapter.ViewHolder2;
 
@@ -53,12 +55,17 @@ public class EventFeedAdapter extends RecyclerView.Adapter<EventFeedAdapter.View
 
         holder.description.setText(description);
 
+        Picasso.get()
+                .load(eventImage16_9)
+                .into(holder.image);
+
 
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
         TextView title, date, description;
+        ImageView image;
 
         public ViewHolder(@NonNull final View itemView) {
             super(itemView);
@@ -66,6 +73,7 @@ public class EventFeedAdapter extends RecyclerView.Adapter<EventFeedAdapter.View
             title = itemView.findViewById(R.id.eventfeed_title_txtview);
             date = itemView.findViewById(R.id.eventfeed_rv_startdate_txv);
             description = itemView.findViewById(R.id.eventfeed_rv_description_txv);
+            image = itemView.findViewById(R.id.event_rv_imageview);
 
             itemView.setOnClickListener(new OnClickListener() {
                 @Override

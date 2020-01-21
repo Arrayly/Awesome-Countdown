@@ -42,8 +42,12 @@ dependencies {
     implementation "androidx.room:room-runtime:$room_version"
     annotationProcessor "androidx.room:room-compiler:$room_version"
 
+    //Lifecycle components
     implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle_version"
     annotationProcessor "androidx.lifecycle:lifecycle-compiler:$lifecycle_version"
 
     implementation 'dev.ahamed.mva2:ext-databinding:2.0.0-beta01'  // DataBinding
+
+    //Progress wheel
+    implementation 'com.zekapp.library:progreswheelview:1.1.5'
 }

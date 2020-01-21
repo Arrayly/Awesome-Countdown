@@ -46,7 +46,7 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
 
     private EventViewModel mViewModel;
 
-    private long futureTime;
+    private long futureTime, millisAtTimeOfCreation;
 
     private String chosenTitle;
 
@@ -340,6 +340,7 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
         } else {
             chosenTitle = charInput.toString().trim();
             futureTime = chosenMillis;
+            millisAtTimeOfCreation = futureTime - System.currentTimeMillis();
             if (!isEventEditing) {
                 mViewModel.queryMaxOrderID();
             } else {
@@ -353,7 +354,7 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
     }
 
     private void updateEventDb() {
-        Event event = new Event(eventOrderId, futureTime, chosenTitle);
+        Event event = new Event(eventOrderId, futureTime,millisAtTimeOfCreation,chosenTitle);
         event.setID(eventEditId);
 
         //Cancel notification
@@ -374,7 +375,7 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
 
 
     private void saveData() {
-        Event event = new Event(eventOrderId, futureTime, chosenTitle);
+        Event event = new Event(eventOrderId, futureTime,millisAtTimeOfCreation,chosenTitle);
         if (isAlertSetInActivity) {
             event.setAlertSet(true);
             event.setNotificationId(notificationId);
@@ -452,6 +453,8 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
         outState.putLong("eventOrderId", eventOrderId);
         outState.putLong("notificationId", notificationId);
         outState.putLong("eventExpiredId", eventExpiredId);
+        outState.putLong("millisAtTimeOfCreation", millisAtTimeOfCreation);
+        outState.putLong("futureTime", futureTime);
 
         outState.putBoolean("isEventEditing", isEventEditing);
         outState.putBoolean("isAlertSetInActivity", isAlertSetInActivity);
@@ -472,6 +475,8 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
         eventOrderId = savedInstanceState.getLong("eventOrderId", mConstants.DEFAULT_VALUE);
         notificationId = savedInstanceState.getLong("notificationId", mConstants.DEFAULT_VALUE);
         eventExpiredId = savedInstanceState.getLong("eventExpiredId", mConstants.DEFAULT_VALUE);
+        millisAtTimeOfCreation = savedInstanceState.getLong("millisAtTimeOfCreation", mConstants.DEFAULT_VALUE);
+        futureTime = savedInstanceState.getLong("futureTime", mConstants.DEFAULT_VALUE);
 
         isEventEditing = savedInstanceState.getBoolean("isEventEditing", isEventEditing);
         isAlertSetInActivity = savedInstanceState.getBoolean("isAlertSetInActivity", isAlertSetInActivity);

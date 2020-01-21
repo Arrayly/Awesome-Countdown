@@ -23,7 +23,7 @@ public class EventAdapter extends ListAdapter<Event, ViewHolder> {
 
     private EventExpiredListener mExpiredListener;
 
-    private long timeLeftInMillis, futureMillis;
+    private long timeLeftInMillis, futureMillis,millisAtTimeOfCreation;
 
     private Context mContext;
 
@@ -76,6 +76,9 @@ public class EventAdapter extends ListAdapter<Event, ViewHolder> {
 
         futureMillis = event.getMillisLeft();
         timeLeftInMillis = futureMillis - System.currentTimeMillis();
+        millisAtTimeOfCreation = event.getMillisAtTimeOfCreation();
+
+
 
         if (holder.mCountDownTimer != null) {
             holder.mCountDownTimer.cancel();
@@ -85,7 +88,7 @@ public class EventAdapter extends ListAdapter<Event, ViewHolder> {
             @Override
             public void onTick(final long millisUntilFinished) {
                 timeLeftInMillis = millisUntilFinished;
-                updateView(timeLeftInMillis, holder, event.getID());
+                updateView(timeLeftInMillis, holder,millisAtTimeOfCreation);
             }
 
             @Override
@@ -94,7 +97,7 @@ public class EventAdapter extends ListAdapter<Event, ViewHolder> {
 
                 Log.i("TAG", "onFinish: " + id);
 
-                if (mExpiredListener != null && position!= RecyclerView.NO_POSITION) {
+                if (mExpiredListener != null && position != RecyclerView.NO_POSITION) {
                     mExpiredListener.onExpired(id);
                 }
 
@@ -102,8 +105,21 @@ public class EventAdapter extends ListAdapter<Event, ViewHolder> {
         }.start();
     }
 
+    @Override
+    public int getItemViewType(final int position) {
 
-    private void updateView(final long timeLeft, final ViewHolder holder, final long eventId) {
+
+        long id = getItem(position).getID();
+
+        Log.i("TAG", "getItemViewType: " + position + " ID: " + id);
+        return super.getItemViewType(position);
+
+    }
+
+    private void updateView(long timeLeft, ViewHolder holder, long millisAtCreation) {
+
+        long seconds_countdown = TimeUnit.MILLISECONDS.toSeconds(timeLeft);
+        long seconds_at_time_of_creation = TimeUnit.MILLISECONDS.toSeconds(millisAtCreation);
 
         final long day = TimeUnit.MILLISECONDS.toDays(timeLeft);
 
@@ -117,37 +133,46 @@ public class EventAdapter extends ListAdapter<Event, ViewHolder> {
                 - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(timeLeft));
 
         if (day >= 1) {
-            holder.time.setText(String.format(Locale.getDefault(), "%d days", day));
+            holder.progress_countdown.setStepCountText(String.format(Locale.getDefault(), "%d days", day));
         } else if (hours >= 1) {
-            holder.time.setText(String.format(Locale.getDefault(), "%d hrs", hours));
+            holder.progress_countdown.setStepCountText(String.format(Locale.getDefault(), "%d hrs", hours));
         } else if (minutes >= 1) {
-            holder.time.setText(String.format(Locale.getDefault(), "%d min", minutes));
+            holder.progress_countdown.setStepCountText(String.format(Locale.getDefault(), "%d min", minutes));
         } else if (seconds >= 1) {
-            holder.time.setText(String.format(Locale.getDefault(), "%d sec", seconds));
+            holder.progress_countdown.setStepCountText(String.format(Locale.getDefault(), "%d sec", seconds));
         } else {
-            holder.time.setText("DONE!");
+            holder.progress_countdown.setStepCountText("DONE!");
         }
+
+        double diff1 = seconds_at_time_of_creation - seconds_countdown;
+        double diff2 = diff1 / seconds_at_time_of_creation;
+        int percentage = (int) (diff2 * 100);
+
+
+        holder.progress_countdown.setPercentage((int) (percentage * 3.6));
+
 
     }
 
 
-    class ViewHolder extends RecyclerView.ViewHolder {
 
+
+    class ViewHolder extends RecyclerView.ViewHolder {
 
         CountDownTimer mCountDownTimer;
 
+        private TextView title, id;
 
-        private TextView title, id, time;
+        com.app.progresviews.ProgressWheel progress_countdown;
 
 
         public ViewHolder(@NonNull final View itemView) {
             super(itemView);
 
-            Log.i("ADAPTER", "ViewHolder: ");
 
             title = itemView.findViewById(R.id.event_rv_title_txv);
             id = itemView.findViewById(R.id.event_rv_id_txv);
-            time = itemView.findViewById(R.id.display_time_txtview);
+            progress_countdown = itemView.findViewById(R.id.progress_countdown);
 
             itemView.setOnClickListener(new OnClickListener() {
                 @Override

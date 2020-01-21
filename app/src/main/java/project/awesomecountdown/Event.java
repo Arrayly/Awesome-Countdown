@@ -24,16 +24,28 @@ public class Event {
     @ColumnInfo(name = "notificationId")
     private long notificationId;
 
+    @ColumnInfo(name = "millisAtTimeOfCreation")
+    private long millisAtTimeOfCreation;
+
     @NonNull
     @ColumnInfo(name = "eventTitle")
     private String eventTitle;
 
-    public Event(final long eventOrderId, final long millisLeft, @NonNull final String eventTitle) {
+    public Event(final long eventOrderId, final long millisLeft, final long millisAtTimeOfCreation,
+            @NonNull final String eventTitle) {
         this.millisLeft = millisLeft;
+        this.millisAtTimeOfCreation = millisAtTimeOfCreation;
         this.eventTitle = eventTitle;
         this.eventOrderId = eventOrderId;
     }
 
+    public long getMillisAtTimeOfCreation() {
+        return millisAtTimeOfCreation;
+    }
+
+    public void setMillisAtTimeOfCreation(final long millisAtTimeOfCreation) {
+        this.millisAtTimeOfCreation = millisAtTimeOfCreation;
+    }
 
     public boolean isAlertSet() {
         return alertSet;

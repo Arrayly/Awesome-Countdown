@@ -50,4 +50,8 @@ dependencies {
 
     //Progress wheel
     implementation 'com.zekapp.library:progreswheelview:1.1.5'
+
+    //Retrofit
+    implementation 'com.squareup.retrofit2:retrofit:2.5.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.5.0'
 }

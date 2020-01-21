@@ -11,6 +11,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.TableLayout;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -31,6 +32,8 @@ import project.awesomecountdown.AddEditActivity.ClickHandler;
 import project.awesomecountdown.databinding.ActivityMainBinding;
 
 public class MainActivity extends ModelActivity implements MyConstants {
+
+    private static final String TAB_TITLES[] = new String[]{"Countdown","Archive","Feed"};
 
     private ActivityMainBinding mMainBinding;
 
@@ -68,10 +71,21 @@ public class MainActivity extends ModelActivity implements MyConstants {
         SectionsPagerAdapter pagerAdapter =
                 new SectionsPagerAdapter(getSupportFragmentManager());
         ViewPager pager = findViewById(R.id.MainActivity_ViewPager);
-        pager.setPageTransformer(true, new ZoomOutPageTransformer());
-        pager.setAdapter(pagerAdapter);
+
+        if (pager!=null) {
+            pager.setPageTransformer(true, new ZoomOutPageTransformer());
+            pager.setAdapter(pagerAdapter);
+        }
+
+
+        TabLayout tabLayout = findViewById(R.id.tabs);
+        if (tabLayout!=null) {
+            tabLayout.setupWithViewPager(pager);
+        }
 
     }
+
+
 
     @Override
     protected void onBindViewModel() {
@@ -143,7 +157,7 @@ public class MainActivity extends ModelActivity implements MyConstants {
 
         @Override
         public int getCount() { //Number of pages
-            return 2;
+            return 3;
         }
 
         @Override
@@ -153,8 +167,16 @@ public class MainActivity extends ModelActivity implements MyConstants {
                     return new HomeFragment();
                 case 1:
                     return new ArchiveFragment();
+                case 2:
+                    return new EventFeedFragment();
             }
             return null;
+        }
+
+        @Nullable
+        @Override
+        public CharSequence getPageTitle(final int position) {
+            return TAB_TITLES[position];
         }
     }
 

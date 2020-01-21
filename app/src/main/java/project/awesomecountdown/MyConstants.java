@@ -16,5 +16,7 @@ public interface MyConstants {
 
     boolean EDIT_EVENT = true;
 
+    String TICKET_MASTER_BASE_URL = "https://app.ticketmaster.com/";
+
 }
 

@@ -1,56 +1,50 @@
 package project.awesomecountdown.ticketmaster.model.embedded.images;
 
+import androidx.annotation.Nullable;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 public class EventImages {
     @SerializedName("ratio")
     @Expose
+    @Nullable
     private String ratio;
 
     @SerializedName("url")
     @Expose
+    @Nullable
     private String url;
 
     @SerializedName("width")
     @Expose
+    @Nullable
     private String width;
 
     @SerializedName("height")
     @Expose
+    @Nullable
     private String height;
 
+    @Nullable
     public String getRatio() {
         return ratio;
     }
 
-    public void setRatio(final String ratio) {
-        this.ratio = ratio;
-    }
-
+    @Nullable
     public String getUrl() {
         return url;
     }
 
-    public void setUrl(final String url) {
-        this.url = url;
-    }
-
+    @Nullable
     public String getWidth() {
         return width;
     }
 
-    public void setWidth(final String width) {
-        this.width = width;
-    }
-
+    @Nullable
     public String getHeight() {
         return height;
     }
 
-    public void setHeight(final String height) {
-        this.height = height;
-    }
 
     @Override
     public String toString() {

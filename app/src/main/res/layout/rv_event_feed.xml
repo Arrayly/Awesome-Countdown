@@ -21,41 +21,66 @@
             android:layout_height="match_parent">
 
             <ImageView
+                android:id="@+id/rv_eventFeed_locationIcon_imgView"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_alignTop="@id/event_rv_imageview"
+                android:layout_marginStart="140dp"
+                android:layout_marginTop="65dp" />
+
+            <ImageView
+                android:id="@+id/rv_eventFeed_dateIcon_imgView"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_alignTop="@id/event_rv_imageview"
+                android:layout_marginTop="45dp"
+                android:layout_marginStart="140dp">
+            </ImageView>
+
+            <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/event_rv_imageview"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_width="120dp"
+                android:layout_marginLeft="10dp"
+                android:layout_centerVertical="true"
+                android:layout_height="120dp"
+                app:civ_border_width="2dp"
+                app:civ_border_color="@color/app_theme_buttons">
+
+            </de.hdodenhof.circleimageview.CircleImageView>
 
             <TextView
-                android:id="@+id/eventfeed_rv_description_txv"
+                android:id="@+id/eventfeed_rv_location_txv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/eventfeed_title_txtview"
-                android:layout_marginTop="10dp"
-                android:text="Description"
-                android:layout_marginLeft="10dp"
-                android:textSize="15sp"
-                android:textStyle="normal" />
+                android:layout_alignTop="@id/rv_eventFeed_locationIcon_imgView"
+                android:layout_alignLeft="@id/rv_eventFeed_locationIcon_imgView"
+                android:layout_marginStart="20dp"
+                android:text="Location"
+                android:textSize="10sp"
+                android:textStyle="italic" />
 
             <TextView
                 android:id="@+id/eventfeed_rv_startdate_txv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_marginRight="60dp"
-                android:layout_marginTop="10dp"
+                android:layout_alignTop="@id/rv_eventFeed_dateIcon_imgView"
+                android:layout_alignLeft="@id/rv_eventFeed_dateIcon_imgView"
+                android:layout_marginStart="20dp"
                 android:text="Date"
-                android:textSize="20sp"
+                android:textSize="10sp"
                 android:textStyle="normal" />
 
             <TextView
                 android:id="@+id/eventfeed_title_txtview"
                 android:layout_width="wrap_content"
+                android:maxLines="2"
+                android:ellipsize="end"
                 android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
-                android:layout_margin="10dp"
+                android:layout_alignTop="@id/event_rv_imageview"
+                android:layout_marginStart="140dp"
                 android:text="Title"
-                android:textSize="20sp"
-                android:textStyle="normal" />
+                android:textSize="15sp"
+                android:textStyle="bold" />
 
         </RelativeLayout>
     </androidx.cardview.widget.CardView>

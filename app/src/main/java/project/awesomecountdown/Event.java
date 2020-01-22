@@ -12,18 +12,23 @@ public class Event {
     @PrimaryKey(autoGenerate = true)
     private long ID;
 
+    @NonNull
     @ColumnInfo(name = "alertSet")
     private boolean alertSet;
 
+    @NonNull
     @ColumnInfo(name = "eventOrderId")
     private long eventOrderId;
 
+    @NonNull
     @ColumnInfo(name = "millisLeft")
     private long millisLeft;
 
+    @NonNull
     @ColumnInfo(name = "notificationId")
     private long notificationId;
 
+    @NonNull
     @ColumnInfo(name = "millisAtTimeOfCreation")
     private long millisAtTimeOfCreation;
 
@@ -31,12 +36,40 @@ public class Event {
     @ColumnInfo(name = "eventTitle")
     private String eventTitle;
 
-    public Event(final long eventOrderId, final long millisLeft, final long millisAtTimeOfCreation,
+    @NonNull
+    @ColumnInfo(name = "eventUrl")
+    private String eventUrl;
+
+    @NonNull
+    @ColumnInfo(name = "eventLocation")
+    private String eventLocation;
+
+    public Event(@NonNull final long eventOrderId, @NonNull final long millisLeft,
+            @NonNull final long millisAtTimeOfCreation,
             @NonNull final String eventTitle) {
+
         this.millisLeft = millisLeft;
         this.millisAtTimeOfCreation = millisAtTimeOfCreation;
         this.eventTitle = eventTitle;
         this.eventOrderId = eventOrderId;
+    }
+
+    @NonNull
+    public String getEventUrl() {
+        return eventUrl;
+    }
+
+    public void setEventUrl(@NonNull final String eventUrl) {
+        this.eventUrl = eventUrl;
+    }
+
+    @NonNull
+    public String getEventLocation() {
+        return eventLocation;
+    }
+
+    public void setEventLocation(@NonNull final String eventLocation) {
+        this.eventLocation = eventLocation;
     }
 
     public long getMillisAtTimeOfCreation() {

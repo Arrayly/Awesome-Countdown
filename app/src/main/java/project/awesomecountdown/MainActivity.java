@@ -4,6 +4,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.util.Log;
@@ -37,7 +38,7 @@ import project.awesomecountdown.databinding.ActivityMainBinding;
 
 public class MainActivity extends ModelActivity implements MyConstants {
 
-    private static final String TAB_TITLES[] = new String[]{"Countdown", "Archive", "Feed"};
+    private static final String TAB_TITLES[] = new String[]{"Countdown", "Events", "Expired"};
 
     private ActivityMainBinding mMainBinding;
 
@@ -76,10 +77,11 @@ public class MainActivity extends ModelActivity implements MyConstants {
 
         if (mToolbar != null) {
             setSupportActionBar(mToolbar);
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setHomeButtonEnabled(true);
             getSupportActionBar().setDisplayShowTitleEnabled(true);
         }
+
+        getWindow().setNavigationBarColor(getResources().getColor(R.color.app_theme_primary));
+        getWindow().setStatusBarColor(getResources().getColor(R.color.app_theme_sub));
 
         //Connect state pager to view with special state pager adapter
         SectionsPagerAdapter pagerAdapter =
@@ -201,9 +203,9 @@ public class MainActivity extends ModelActivity implements MyConstants {
                 case 0:
                     return new HomeFragment();
                 case 1:
-                    return new ArchiveFragment();
-                case 2:
                     return new EventFeedFragment();
+                case 2:
+                    return new ArchiveFragment();
             }
             return null;
         }

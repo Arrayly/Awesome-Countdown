@@ -1,5 +1,6 @@
 package project.awesomecountdown.ticketmaster.model.embedded.eventdates;
 
+import androidx.annotation.Nullable;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -8,13 +9,11 @@ public class EventDates {
     @Expose
     private Start start;
 
+    @Nullable
     public Start getStart() {
         return start;
     }
 
-    public void setStart(final Start start) {
-        this.start = start;
-    }
 
     @Override
     public String toString() {

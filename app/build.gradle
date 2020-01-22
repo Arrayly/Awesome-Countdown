@@ -18,7 +18,6 @@ android {
         }
     }
 
-
     dataBinding {
         enabled = true
     }
@@ -59,4 +58,11 @@ dependencies {
 
     //Picasso
     implementation 'com.squareup.picasso:picasso:2.71828'
+
+
+    //Circular ImageView
+    implementation 'de.hdodenhof:circleimageview:3.0.2'
+
+
+
 }

@@ -37,6 +37,7 @@
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
                     android:id="@+id/MainActivity_Fab"
                     android:layout_width="wrap_content"
+                    app:backgroundTint="@color/app_theme_buttons"
                     android:layout_height="wrap_content"
                     android:layout_gravity="bottom|end"
                     android:layout_margin="20dp"

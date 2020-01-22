@@ -1,32 +1,30 @@
 package project.awesomecountdown.ticketmaster.model.embedded.venue;
 
+import androidx.annotation.Nullable;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 public class Venue {
     @SerializedName("name")
     @Expose
+    @Nullable
     private String locationName;
 
     @SerializedName("postalCode")
     @Expose
+    @Nullable
     private String locationPostalCode;
 
+    @Nullable
     public String getLocationName() {
         return locationName;
     }
 
-    public void setLocationName(final String locationName) {
-        this.locationName = locationName;
-    }
-
+    @Nullable
     public String getLocationPostalCode() {
         return locationPostalCode;
     }
 
-    public void setLocationPostalCode(final String locationPostalCode) {
-        this.locationPostalCode = locationPostalCode;
-    }
 
     @Override
     public String toString() {

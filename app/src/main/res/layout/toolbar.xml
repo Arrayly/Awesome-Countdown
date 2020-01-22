@@ -4,7 +4,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="?attr/actionBarSize"
-    android:background="@color/colorAccent"
+    android:background="@color/app_theme_primary"
     android:layout_alignParentTop="true"
     android:translationZ="5dp"
     android:elevation="10dp"

@@ -357,6 +357,8 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
         Event event = new Event(eventOrderId, futureTime,millisAtTimeOfCreation,chosenTitle);
         event.setID(eventEditId);
 
+
+
         //Cancel notification
         if (!isAlertSetInActivity && isAlertSetInDatabase) {
             event.setAlertSet(false);
@@ -376,9 +378,9 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
 
     private void saveData() {
         Event event = new Event(eventOrderId, futureTime,millisAtTimeOfCreation,chosenTitle);
+        event.setNotificationId(notificationId);
         if (isAlertSetInActivity) {
             event.setAlertSet(true);
-            event.setNotificationId(notificationId);
             setNotification();
         }
 

@@ -4,11 +4,12 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="?attr/actionBarSize"
-    android:background="@color/app_theme_primary"
     android:layout_alignParentTop="true"
-    android:translationZ="5dp"
-    android:elevation="10dp"
-    android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+    app:layout_collapseMode="pin"
+    app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+    android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
 </androidx.appcompat.widget.Toolbar>
+
 

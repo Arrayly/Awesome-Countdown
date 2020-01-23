@@ -64,5 +64,16 @@ dependencies {
     implementation 'de.hdodenhof:circleimageview:3.0.2'
 
 
+    //Animations
+    implementation 'com.daimajia.easing:library:2.0@aar'
+    implementation 'com.daimajia.androidanimations:library:2.3@aar'
+
+    //Shadow effects
+    implementation 'com.h6ah4i.android.materialshadowninepatch:materialshadowninepatch:1.0.0'
+
+    //Color picker
+    implementation 'com.github.yukuku:ambilwarna:2.0.1'
+
+
 
 }

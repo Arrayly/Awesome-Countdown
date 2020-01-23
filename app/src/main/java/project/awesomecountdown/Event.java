@@ -52,6 +52,8 @@ public class Event {
         this.millisAtTimeOfCreation = millisAtTimeOfCreation;
         this.eventTitle = eventTitle;
         this.eventOrderId = eventOrderId;
+        this.setEventUrl("");
+        this.setEventLocation("");
     }
 
     @NonNull

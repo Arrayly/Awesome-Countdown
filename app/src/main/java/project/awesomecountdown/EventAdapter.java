@@ -82,7 +82,12 @@ public class EventAdapter extends ListAdapter<Event, ViewHolder> {
 
         if (holder.mCountDownTimer != null) {
             holder.mCountDownTimer.cancel();
+            holder.progress_countdown.invalidate();
+            holder.mCountDownTimer = null;
+
         }
+
+
 
         holder.mCountDownTimer = new CountDownTimer(timeLeftInMillis, 1000) {
             @Override

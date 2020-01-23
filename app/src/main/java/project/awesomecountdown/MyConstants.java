@@ -18,5 +18,12 @@ public interface MyConstants {
 
     String TICKET_MASTER_BASE_URL = "https://app.ticketmaster.com/";
 
+    String EXTRA_CIRCULAR_REVEAL_X = "EXTRA_CIRCULAR_REVEAL_X";
+    String EXTRA_CIRCULAR_REVEAL_Y = "EXTRA_CIRCULAR_REVEAL_Y";
+
+
+    //Reveal animation circular
+    //https://android.jlelse.eu/a-little-thing-that-matter-how-to-reveal-an-activity-with-circular-revelation-d94f9bfcae28
+
 }
 

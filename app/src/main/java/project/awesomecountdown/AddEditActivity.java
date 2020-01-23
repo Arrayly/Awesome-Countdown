@@ -1,5 +1,7 @@
 package project.awesomecountdown;
 
+import android.animation.Animator;
+import android.animation.Animator.AnimatorListener;
 import android.app.AlarmManager;
 import android.app.DatePickerDialog;
 import android.app.PendingIntent;
@@ -15,6 +17,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnFocusChangeListener;
+import android.view.ViewAnimationUtils;
+import android.view.ViewTreeObserver;
+import android.view.animation.AccelerateInterpolator;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.DatePicker;
@@ -23,14 +28,18 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import android.os.Bundle;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.widget.TextViewCompat.AutoSizeTextType;
+import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
+import com.daimajia.androidanimations.library.Techniques;
+import com.daimajia.androidanimations.library.YoYo;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import project.awesomecountdown.databinding.ActivityAddEditBinding;
+import yuku.ambilwarna.AmbilWarnaDialog;
+import yuku.ambilwarna.AmbilWarnaDialog.OnAmbilWarnaListener;
 
 public class AddEditActivity extends ModelActivity implements MyConstants {
 
@@ -40,7 +49,7 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
 
     private MyConstants mConstants;
 
-    private int mYear, mMonth, mDay, mHour, mMinute;
+    private int mYear, mMonth, mDay, mHour, mMinute, revealX, revealY, randomImageButtonClickedTimes, colorDefault;
 
     private CharSequence charInput = "";
 
@@ -52,9 +61,14 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
 
     private List<Event> mEventList = new ArrayList<>();
 
-    private boolean isEventEditing, isAlertSetInActivity, isAlertSetInDatabase, isExpiredEventBeingUpdated;
+    private boolean isEventEditing, isAlertSetInActivity, isAlertSetInDatabase, isExpiredEventBeingUpdated,
+            savedInstanceIsNull;
 
     private long eventEditId, eventOrderId, notificationId, eventExpiredId;
+
+    private View rootLayout;
+
+    private int[] randomImageId = new int[7];
 
 
     private void showDatePickerDialog() {
@@ -119,10 +133,36 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
     @Override
     protected void onViewInit() {
         super.onViewInit();
+
+        //Load up array with out image references
+        for (int i = 0; i < 7; i++) {
+            randomImageId[i] = getResources()
+                    .getIdentifier("drawable/" + "add_edit_pic_" + i, null, getPackageName());
+        }
+
+        colorDefault = ContextCompat.getColor(AddEditActivity.this, R.color.white);
+
         mBinding = DataBindingUtil.setContentView(AddEditActivity.this, R.layout.activity_add_edit);
+
+        mBinding.addEditCustomImage.setImageResource(randomImageId[0]);
+
         mBinding.setClickListener(mClickHandler);
-        Toolbar toolbar = findViewById(R.id.newEvent_toolbar);
-        setSupportActionBar(toolbar);
+        rootLayout = findViewById(R.id.root_layout);
+        if (!savedInstanceIsNull) {
+            rootLayout.setVisibility(View.GONE);
+        }
+        Toolbar toolbar = findViewById(R.id.AddEdit_toolbar);
+        if (toolbar != null) {
+            setSupportActionBar(toolbar);
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setHomeButtonEnabled(true);
+
+        }
+
+        //Set random image in our cardView
+
+        getWindow().setNavigationBarColor(getResources().getColor(R.color.app_theme_buttons));
+        getWindow().setStatusBarColor(getResources().getColor(R.color.app_theme_buttons));
     }
 
     @Override
@@ -257,7 +297,7 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
 
         updateDateUI();
         updateTimeUI();
-        updateEventNameUI();
+        updateOtherUI();
 
     }
 
@@ -277,7 +317,96 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
             if (id != 0) {
                 getExpiredEventFromDb(id);
             }
+        } else if (intent.hasExtra(EXTRA_CIRCULAR_REVEAL_X) && intent.hasExtra(EXTRA_CIRCULAR_REVEAL_Y)
+                && savedInstanceIsNull) {
+            rootLayout.setVisibility(View.INVISIBLE);
+            revealX = intent.getIntExtra(EXTRA_CIRCULAR_REVEAL_X, 0);
+            revealY = intent.getIntExtra(EXTRA_CIRCULAR_REVEAL_Y, 0);
+
+            processActivityInfo(revealX, revealY);
+
         }
+    }
+
+    private void processActivityInfo(final int revealX, final int revealY) {
+        ViewTreeObserver viewTreeObserver = rootLayout.getViewTreeObserver();
+
+        if (viewTreeObserver.isAlive()) {
+            viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    revealActivity(revealX, revealY);
+                    rootLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                }
+            });
+        } else {
+            rootLayout.setVisibility(View.VISIBLE);
+        }
+    }
+
+    protected void revealActivity(final int revealX, final int revealY) {
+        float finalRadius = (float) (Math.max(rootLayout.getWidth(), rootLayout.getHeight()) * 1.1);
+
+        // create the animator for this view (the start radius is zero)
+        Animator circularReveal = ViewAnimationUtils
+                .createCircularReveal(rootLayout, revealX, revealY, 0, finalRadius);
+        circularReveal.setDuration(300);
+        circularReveal.setInterpolator(new AccelerateInterpolator());
+
+        // make the view visible and start the animation
+        rootLayout.setVisibility(View.VISIBLE);
+
+        circularReveal.addListener(new AnimatorListener() {
+            @Override
+            public void onAnimationStart(final Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(final Animator animation) {
+                FadeOutView();
+            }
+
+            @Override
+            public void onAnimationCancel(final Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(final Animator animation) {
+
+            }
+        });
+
+        circularReveal.start();
+
+    }
+
+    private void FadeOutView() {
+        YoYo.with(Techniques.FadeOut)
+                .duration(300)
+                .withListener(new AnimatorListener() {
+                    @Override
+                    public void onAnimationStart(final Animator animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationEnd(final Animator animation) {
+                        rootLayout.setVisibility(View.GONE);
+                    }
+
+                    @Override
+                    public void onAnimationCancel(final Animator animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(final Animator animation) {
+
+                    }
+                })
+                .playOn(rootLayout);
     }
 
 
@@ -292,20 +421,24 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (savedInstanceState == null) {
+            savedInstanceIsNull = true;
+        } else {
+            savedInstanceIsNull = false;
+        }
+
         startActivityInitProcess();
 
         if (savedInstanceState != null) {
             loadDestroyedData(savedInstanceState);
         }
-
-
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull final MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                finish();
+                onBackPressed();
 
             case R.id.finish_edit:
                 validationProcessor();
@@ -314,10 +447,9 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
         return super.onOptionsItemSelected(item);
     }
 
-    private void finishActivity() {
-        Intent replyIntent = new Intent();
-        setResult(RESULT_OK, replyIntent);
-        finish();
+    private void unRevealActivity() {
+        HideSoftKeyboard.hideKeyboard(this);
+        onBackPressed();
     }
 
     @Override
@@ -329,7 +461,7 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
 
     private void validationProcessor() {
         Calendar c = Calendar.getInstance();
-        c.set(mYear, mMonth, mDay, mHour, mMinute,DEFAULT_VALUE);
+        c.set(mYear, mMonth, mDay, mHour, mMinute, DEFAULT_VALUE);
         long chosenMillis = c.getTimeInMillis();
         long currentMillis = System.currentTimeMillis();
         long diff = chosenMillis - currentMillis;
@@ -354,10 +486,8 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
     }
 
     private void updateEventDb() {
-        Event event = new Event(eventOrderId, futureTime,millisAtTimeOfCreation,chosenTitle);
+        Event event = new Event(eventOrderId, futureTime, millisAtTimeOfCreation, chosenTitle);
         event.setID(eventEditId);
-
-
 
         //Cancel notification
         if (!isAlertSetInActivity && isAlertSetInDatabase) {
@@ -370,14 +500,14 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
             setNotification();
         }
         mViewModel.updateEditedEvent(event);
-        finishActivity();
+        unRevealActivity();
 
 
     }
 
 
     private void saveData() {
-        Event event = new Event(eventOrderId, futureTime,millisAtTimeOfCreation,chosenTitle);
+        Event event = new Event(eventOrderId, futureTime, millisAtTimeOfCreation, chosenTitle);
         event.setNotificationId(notificationId);
         if (isAlertSetInActivity) {
             event.setAlertSet(true);
@@ -386,11 +516,11 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
 
         mViewModel.addEvent(event);
 
-        if (isExpiredEventBeingUpdated){
+        if (isExpiredEventBeingUpdated) {
             mViewModel.deleteExpiredEventById(eventExpiredId);
         }
 
-        finishActivity();
+        unRevealActivity();
     }
 
 
@@ -448,6 +578,7 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
         outState.putInt("mDay", mDay);
         outState.putInt("mHour", mHour);
         outState.putInt("mMinute", mMinute);
+        outState.putInt("randomImageButtonClickedTimes", randomImageButtonClickedTimes);
 
         outState.putCharSequence("charInput", charInput);
 
@@ -470,6 +601,8 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
         mDay = savedInstanceState.getInt("mDay", mConstants.DEFAULT_VALUE);
         mHour = savedInstanceState.getInt("mHour", mConstants.DEFAULT_VALUE);
         mMinute = savedInstanceState.getInt("mMinute", mConstants.DEFAULT_VALUE);
+        randomImageButtonClickedTimes = savedInstanceState
+                .getInt("randomImageButtonClickedTimes", mConstants.DEFAULT_VALUE);
 
         charInput = savedInstanceState.getCharSequence("charInput", charInput);
 
@@ -483,11 +616,12 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
         isEventEditing = savedInstanceState.getBoolean("isEventEditing", isEventEditing);
         isAlertSetInActivity = savedInstanceState.getBoolean("isAlertSetInActivity", isAlertSetInActivity);
         isAlertSetInDatabase = savedInstanceState.getBoolean("isAlertSetInDatabase", isAlertSetInDatabase);
-        isExpiredEventBeingUpdated = savedInstanceState.getBoolean("isExpiredEventBeingUpdated", isExpiredEventBeingUpdated);
+        isExpiredEventBeingUpdated = savedInstanceState
+                .getBoolean("isExpiredEventBeingUpdated", isExpiredEventBeingUpdated);
 
         updateDateUI();
         updateTimeUI();
-        updateEventNameUI();
+        updateOtherUI();
 
     }
 
@@ -498,6 +632,40 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
         public ClickHandler(final Context context) {
             mContext = context;
         }
+
+        public void randomBackground(View view) {
+            randomImageButtonClickedTimes++;
+            if (randomImageButtonClickedTimes >= randomImageId.length) {
+                randomImageButtonClickedTimes = 0;
+            }
+            mBinding.addEditCustomImage.setImageResource(randomImageId[randomImageButtonClickedTimes]);
+        }
+
+        public void pickColorButton(View view) {
+            showColorPickerDialog();
+        }
+
+        private void showColorPickerDialog() {
+            AmbilWarnaDialog ambilWarnaDialog = new AmbilWarnaDialog(AddEditActivity.this, colorDefault,
+                    new OnAmbilWarnaListener() {
+                        @Override
+                        public void onCancel(final AmbilWarnaDialog dialog) {
+
+                        }
+
+                        @Override
+                        public void onOk(final AmbilWarnaDialog dialog, final int color) {
+                            colorDefault = color;
+                            mBinding.colorBtn.setBackgroundColor(colorDefault);
+                        }
+                    });
+
+            ambilWarnaDialog.show();
+
+
+        }
+
+
     }
 
     private void updateDateUI() {
@@ -508,8 +676,9 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
         mBinding.inputTimeEtext.setText(mHour + ":" + mMinute);
     }
 
-    private void updateEventNameUI() {
+    private void updateOtherUI() {
         mBinding.inputNameEtext.setText(charInput);
+        mBinding.addEditCustomImage.setImageResource(randomImageId[randomImageButtonClickedTimes]);
     }
 
     @Override

@@ -4,6 +4,7 @@ package project.awesomecountdown;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -30,7 +31,8 @@ import project.awesomecountdown.databinding.FragmentHomeBinding;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class HomeFragment extends ModelFragment implements MyConstants, BottomSheetDialogHomeFragment.BottomSheetListener {
+public class HomeFragment extends ModelFragment
+        implements MyConstants, BottomSheetDialogHomeFragment.BottomSheetListener {
 
     private FragmentHomeBinding mHomeBinding;
 
@@ -154,6 +156,17 @@ public class HomeFragment extends ModelFragment implements MyConstants, BottomSh
                 }, 100);
             }
         });
+
+        //Observe for activity transition from main activity to addEdit activity
+        mTransactionViewModel.activityTransition.observe(getViewLifecycleOwner(), new Observer<Boolean>() {
+            @Override
+            public void onChanged(final Boolean aBoolean) {
+                if (aBoolean){
+                    Log.i("transit", "onChanged: " + aBoolean);
+                    updateDatabase();
+                }
+            }
+        });
     }
 
     @Override
@@ -264,7 +277,11 @@ public class HomeFragment extends ModelFragment implements MyConstants, BottomSh
     @Override
     public void onStop() {
         super.onStop();
+        updateDatabase();
 
+    }
+
+    private void updateDatabase() {
         mEventViewModel.updateEvent(sortedEventList);
 
         if (deletedEventIDs.size() != 0) {

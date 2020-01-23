@@ -4,10 +4,13 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Build;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
+import android.os.Handler;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -22,6 +25,8 @@ import android.os.Bundle;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.SearchView.OnQueryTextListener;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.ActivityOptionsCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -31,6 +36,8 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.viewpager.widget.ViewPager;
 import androidx.viewpager.widget.ViewPager.OnPageChangeListener;
 import com.airbnb.lottie.LottieAnimationView;
+import com.daimajia.androidanimations.library.Techniques;
+import com.daimajia.androidanimations.library.YoYo;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 import project.awesomecountdown.AddEditActivity.ClickHandler;
@@ -174,15 +181,39 @@ public class MainActivity extends ModelActivity implements MyConstants {
             mContext = context;
         }
 
-        public void fabClicked(View view) {
-            startAddEditEventActivity();
+        public void fabClicked(final View view) {
 
+            startAddEditEventActivity(view);
         }
     }
 
-    private void startAddEditEventActivity() {
-        Intent intent = new Intent(MainActivity.this, AddEditActivity.class);
-        startActivityForResult(intent, mMyConstants.REQUEST_NEW_EVENT);
+    private void startAddEditEventActivity(View view) {
+
+        ActivityOptionsCompat options = ActivityOptionsCompat.
+                makeSceneTransitionAnimation(this, view, "transition");
+
+        int revealX = view.getRight() - getDips(44);
+        int revealY = view.getBottom() - getDips(44);
+
+        Intent intent = new Intent(this, AddEditActivity.class);
+
+        intent.putExtra(AddEditActivity.EXTRA_CIRCULAR_REVEAL_X, revealX);
+        intent.putExtra(AddEditActivity.EXTRA_CIRCULAR_REVEAL_Y, revealY);
+
+        ActivityCompat.startActivity(this, intent, options.toBundle());
+
+        mTransactionViewModel.activityTransition.setValue(true);
+        mTransactionViewModel.activityTransition.setValue(false);
+
+
+    }
+
+    private int getDips(int dps) {
+        Resources resources = getResources();
+        return (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                dps,
+                resources.getDisplayMetrics());
     }
 
     //State pager adapter for fragments

@@ -59,10 +59,8 @@ dependencies {
     //Picasso
     implementation 'com.squareup.picasso:picasso:2.71828'
 
-
     //Circular ImageView
     implementation 'de.hdodenhof:circleimageview:3.0.2'
-
 
     //Animations
     implementation 'com.daimajia.easing:library:2.0@aar'
@@ -73,6 +71,9 @@ dependencies {
 
     //Color picker
     implementation 'com.github.yukuku:ambilwarna:2.0.1'
+
+    //Lottie
+    implementation 'com.airbnb.android:lottie:2.8.0'
 
 
 

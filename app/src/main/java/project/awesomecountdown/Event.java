@@ -44,16 +44,86 @@ public class Event {
     @ColumnInfo(name = "eventLocation")
     private String eventLocation;
 
+    @NonNull
+    @ColumnInfo(name = "imageId")
+    private int imageId;
+
+
+    @NonNull
+    @ColumnInfo(name = "textColorId")
+    private int textColorId;
+
+    @NonNull
+    @ColumnInfo(name = "dateRawString")
+    private String dateRawString;
+
+    @NonNull
+    @ColumnInfo(name = "imgUrl")
+    private String imgUrl;
+
+    @NonNull
+    @ColumnInfo(name = "imageLoadedFromUserPhone")
+    private boolean imageLoadedFromUserPhone;
+
+
     public Event(@NonNull final long eventOrderId, @NonNull final long millisLeft,
             @NonNull final long millisAtTimeOfCreation,
-            @NonNull final String eventTitle) {
+            @NonNull final String eventTitle, @NonNull final int imageId, @NonNull final int textColorId,
+            @NonNull final String dateRawString) {
 
         this.millisLeft = millisLeft;
         this.millisAtTimeOfCreation = millisAtTimeOfCreation;
         this.eventTitle = eventTitle;
         this.eventOrderId = eventOrderId;
+        this.imageId = imageId;
+        this.textColorId = textColorId;
+        this.dateRawString = dateRawString;
+
         this.setEventUrl("");
         this.setEventLocation("");
+        this.setImgUrl("");
+    }
+
+    public boolean isImageLoadedFromUserPhone() {
+        return imageLoadedFromUserPhone;
+    }
+
+    public void setImageLoadedFromUserPhone(final boolean imageLoadedFromUserPhone) {
+        this.imageLoadedFromUserPhone = imageLoadedFromUserPhone;
+    }
+
+    @NonNull
+    public String getDateRawString() {
+        return dateRawString;
+    }
+
+    public void setDateRawString(@NonNull final String dateRawString) {
+        this.dateRawString = dateRawString;
+    }
+
+    public int getImageId() {
+        return imageId;
+    }
+
+    public void setImageId(final int imageId) {
+        this.imageId = imageId;
+    }
+
+    public int getTextColorId() {
+        return textColorId;
+    }
+
+    public void setTextColorId(final int textColorId) {
+        this.textColorId = textColorId;
+    }
+
+    @NonNull
+    public String getImgUrl() {
+        return imgUrl;
+    }
+
+    public void setImgUrl(@NonNull final String imgUrl) {
+        this.imgUrl = imgUrl;
     }
 
     @NonNull

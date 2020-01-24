@@ -12,5 +12,13 @@
 
 
 
+<!-- TAB COLORS   -->
+    <color name="tab_countdown">#0052C2</color>
+    <color name="tab_event">#E63950</color>
+    <color name="tab_expired">#A7D22A</color>
+
+
+
+
 
 </resources>

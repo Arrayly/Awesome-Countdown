@@ -4,6 +4,8 @@ public interface MyConstants {
 
     int DEFAULT_VALUE = 0, REQUEST_NEW_EVENT = 1, REQUEST_EDIT_EVENT = 2, REQUEST_UPDATE_EVENT = 3;
 
+    int DEFAULT_IMG_ID = 0;
+
     String CHOSEN_TIME = "CHOSEN_TIME",
             CHOSEN_EVENT_ID = "CHOSEN_EVENT_ID",
             CHOSEN_EXPIRED_EVENT_ID = "CHOSEN_EXPIRED_EVENT_ID",
@@ -20,6 +22,8 @@ public interface MyConstants {
 
     String EXTRA_CIRCULAR_REVEAL_X = "EXTRA_CIRCULAR_REVEAL_X";
     String EXTRA_CIRCULAR_REVEAL_Y = "EXTRA_CIRCULAR_REVEAL_Y";
+
+    String IMAGE_BITMAP_ID = "IMAGE_BITMAP_ID";
 
 
     //Reveal animation circular

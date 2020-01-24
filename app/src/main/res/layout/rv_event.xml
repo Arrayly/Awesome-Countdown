@@ -1,6 +1,7 @@
-<LinearLayout android:id="@+id/event_rv_linear_layout"
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/event_rv_linear_layout"
     android:layout_width="match_parent"
     android:layout_height="150dp"
     android:orientation="vertical">
@@ -20,40 +21,86 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <com.app.progresviews.ProgressWheel
-                android:id="@+id/progress_countdown"
-                android:layout_width="150dp"
-                android:layout_height="150dp"
-                app:barWidth="17dp"
-                app:marginBtwText= "15dp"
-                app:definitionText="Time Left!"
-                app:countTextColor="@android:color/black"
-                app:defTextColor="@android:color/black"
-                app:progressColor="#64b324"
-                app:defTextSize="10sp"
-                app:percentage="360"
-                app:rimColor="@color/colorAccent"
-                app:countTextSize="20sp" />
+            <ImageView
+                android:id="@+id/rv_event_background_imgVIew"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+            </ImageView>
+
+            <TextView
+                android:id="@+id/rv_event_display_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignEnd="@id/anim_shadow_container"
+                android:layout_marginTop="35dp"
+                android:layout_marginEnd="45dp"
+                android:text="time"
+                android:textSize="10sp"
+                tools:ignore="SmallSp" />
+
+            <com.h6ah4i.android.materialshadowninepatch.MaterialShadowContainerView
+                android:layout_width="100dp"
+                android:id="@+id/anim_shadow_container"
+                style="@style/ms9_DefaultShadowStyle"
+                app:ms9_shadowTranslationZ="6dp"
+                app:ms9_shadowElevation="10dp"
+                app:ms9_useAmbientShadow="true"
+                app:ms9_affectsDisplayedPosition="true"
+                app:ms9_useSpotShadow="true"
+                android:layout_height="100dp">
+
+                <com.airbnb.lottie.LottieAnimationView
+                    android:id="@+id/rv_event_animation"
+                    android:layout_width="75dp"
+                    android:layout_height="75dp"
+                    android:layout_alignParentStart="true"
+                    android:layout_margin="5dp"
+                    android:background="@drawable/round_shape"
+                    android:elevation="4dp"
+                    app:lottie_autoPlay="true"
+                    app:lottie_fileName="timer_animation.json"
+                    app:lottie_loop="true">
+
+                </com.airbnb.lottie.LottieAnimationView>
+
+            </com.h6ah4i.android.materialshadowninepatch.MaterialShadowContainerView>
+
+
+
 
             <TextView
                 android:id="@+id/event_rv_title_txv"
                 android:layout_width="wrap_content"
+                android:maxLines="2"
+                android:ellipsize="end"
+                android:layout_marginTop="10dp"
                 android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
-                android:text="TITLE"
-                android:textSize="25sp"
-                android:textStyle="normal" />
+                android:layout_alignTop="@id/anim_shadow_container"
+                android:layout_marginStart="100dp"
+                android:text="@string/title"
+                android:textSize="20sp"
+                android:textStyle="bold"/>
 
             <TextView
-                android:id="@+id/event_rv_id_txv"
+                android:id="@+id/event_end_date"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_alignTop="@id/anim_shadow_container"
+                android:layout_marginStart="100dp"
+                android:layout_marginTop="45dp"
+                android:text="@string/date"
+                android:textSize="10sp"
+                android:textStyle="normal"
+                tools:ignore="RelativeOverlap" />
+
+            <ImageView
+                android:id="@+id/rv_event_reminderSet_imgView"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
                 android:layout_alignParentEnd="true"
-                android:layout_marginRight="40dp"
-                android:layout_marginTop="10dp"
-                android:text="ID"
-                android:textSize="20sp"
-                android:textStyle="normal" />
+                android:layout_margin="15dp"
+                android:layout_alignParentBottom="true">
+            </ImageView>
 
         </RelativeLayout>
     </androidx.cardview.widget.CardView>

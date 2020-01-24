@@ -5,7 +5,7 @@ import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
-@Database(entities = {Event.class, ExpiredEvents.class}, version = 13, exportSchema = false)
+@Database(entities = {Event.class, ExpiredEvents.class}, version = 18, exportSchema = false)
 public abstract class EventDatabase extends RoomDatabase {
 
     private static EventDatabase INSTANCE;

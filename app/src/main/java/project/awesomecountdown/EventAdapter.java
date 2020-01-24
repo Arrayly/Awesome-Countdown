@@ -1,12 +1,15 @@
 package project.awesomecountdown;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
@@ -23,9 +26,11 @@ public class EventAdapter extends ListAdapter<Event, ViewHolder> {
 
     private EventExpiredListener mExpiredListener;
 
-    private long timeLeftInMillis, futureMillis,millisAtTimeOfCreation;
+    private long timeLeftInMillis, futureMillis, millisAtTimeOfCreation;
 
     private Context mContext;
+
+    private View mView;
 
 
     public EventAdapter(Context context) {
@@ -71,48 +76,54 @@ public class EventAdapter extends ListAdapter<Event, ViewHolder> {
         Log.i("ADAPTER", "onBindViewHolder: ");
         final Event event = getItem(position);
 
+        if (event.isImageLoadedFromUserPhone() && AppHelperClass.checkIfUserBitmapImageExists(mContext)){
+            Bitmap bitmap = AppHelperClass.getUserBitmapImage(mContext);
+            holder.cardBackgroundImgView.setImageBitmap(bitmap);
+        }else {
+            holder.cardBackgroundImgView.setBackgroundResource(event.getImageId());
+        }
+
+        int textColor = event.getTextColorId();
         holder.title.setText(event.getEventTitle());
-        holder.id.setText("ID = " + event.getID());
+        holder.endDate.setText(event.getDateRawString());
+        if (event.isAlertSet()){
+            holder.reminderImgView.setImageDrawable(mContext.getDrawable(R.drawable.reminder_set_icon));
+
+        }
+
+        holder.title.setTextColor(textColor);
+        holder.endDate.setTextColor(textColor);
 
         futureMillis = event.getMillisLeft();
         timeLeftInMillis = futureMillis - System.currentTimeMillis();
         millisAtTimeOfCreation = event.getMillisAtTimeOfCreation();
 
-
-
+        //Nullify countdown to prevent new objects using the same references
         if (holder.mCountDownTimer != null) {
             holder.mCountDownTimer.cancel();
-            holder.progress_countdown.invalidate();
             holder.mCountDownTimer = null;
 
         }
-
-
 
         holder.mCountDownTimer = new CountDownTimer(timeLeftInMillis, 1000) {
             @Override
             public void onTick(final long millisUntilFinished) {
                 timeLeftInMillis = millisUntilFinished;
-                updateView(timeLeftInMillis, holder,millisAtTimeOfCreation);
+                updateView(timeLeftInMillis, holder, millisAtTimeOfCreation);
             }
 
             @Override
             public void onFinish() {
-                long id = getItem(holder.getAdapterPosition()).getID();
-
-                Log.i("TAG", "onFinish: " + id);
-
-                if (mExpiredListener != null && position != RecyclerView.NO_POSITION) {
+                if (holder.getAdapterPosition() != RecyclerView.NO_POSITION && mExpiredListener != null) {
+                    long id = getItem(holder.getAdapterPosition()).getID();
                     mExpiredListener.onExpired(id);
                 }
-
             }
         }.start();
     }
 
     @Override
     public int getItemViewType(final int position) {
-
 
         long id = getItem(position).getID();
 
@@ -122,9 +133,6 @@ public class EventAdapter extends ListAdapter<Event, ViewHolder> {
     }
 
     private void updateView(long timeLeft, ViewHolder holder, long millisAtCreation) {
-
-        long seconds_countdown = TimeUnit.MILLISECONDS.toSeconds(timeLeft);
-        long seconds_at_time_of_creation = TimeUnit.MILLISECONDS.toSeconds(millisAtCreation);
 
         final long day = TimeUnit.MILLISECONDS.toDays(timeLeft);
 
@@ -138,46 +146,39 @@ public class EventAdapter extends ListAdapter<Event, ViewHolder> {
                 - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(timeLeft));
 
         if (day >= 1) {
-            holder.progress_countdown.setStepCountText(String.format(Locale.getDefault(), "%d days", day));
+            holder.time.setText(String.format(Locale.getDefault(), "%d days", day));
         } else if (hours >= 1) {
-            holder.progress_countdown.setStepCountText(String.format(Locale.getDefault(), "%d hrs", hours));
+            holder.time.setText(String.format(Locale.getDefault(), "%d hrs", hours));
         } else if (minutes >= 1) {
-            holder.progress_countdown.setStepCountText(String.format(Locale.getDefault(), "%d min", minutes));
+            holder.time.setText(String.format(Locale.getDefault(), "%d min", minutes));
         } else if (seconds >= 1) {
-            holder.progress_countdown.setStepCountText(String.format(Locale.getDefault(), "%d sec", seconds));
+            holder.time.setText(String.format(Locale.getDefault(), "%d sec", seconds));
         } else {
-            holder.progress_countdown.setStepCountText("DONE!");
+            holder.time.setText("DONE!");
         }
-
-        double diff1 = seconds_at_time_of_creation - seconds_countdown;
-        double diff2 = diff1 / seconds_at_time_of_creation;
-        int percentage = (int) (diff2 * 100);
-
-
-        holder.progress_countdown.setPercentage((int) (percentage * 3.6));
-
-
     }
-
-
 
 
     class ViewHolder extends RecyclerView.ViewHolder {
 
         CountDownTimer mCountDownTimer;
 
-        private TextView title, id;
+        private TextView title, endDate, time;
 
-        com.app.progresviews.ProgressWheel progress_countdown;
+        private ImageView reminderImgView, cardBackgroundImgView;
 
 
         public ViewHolder(@NonNull final View itemView) {
             super(itemView);
 
+            mView = itemView;
 
             title = itemView.findViewById(R.id.event_rv_title_txv);
-            id = itemView.findViewById(R.id.event_rv_id_txv);
-            progress_countdown = itemView.findViewById(R.id.progress_countdown);
+            endDate = itemView.findViewById(R.id.event_end_date);
+            time = itemView.findViewById(R.id.rv_event_display_time);
+            reminderImgView = itemView.findViewById(R.id.rv_event_reminderSet_imgView);
+            cardBackgroundImgView = itemView.findViewById(R.id.rv_event_background_imgVIew);
+            time.bringToFront();
 
             itemView.setOnClickListener(new OnClickListener() {
                 @Override

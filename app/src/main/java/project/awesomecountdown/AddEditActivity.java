@@ -8,7 +8,11 @@ import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.ImageDecoder;
+import android.net.Uri;
 import android.os.Handler;
+import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -27,13 +31,14 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import android.os.Bundle;
+import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import com.daimajia.androidanimations.library.Techniques;
 import com.daimajia.androidanimations.library.YoYo;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -49,7 +54,8 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
 
     private MyConstants mConstants;
 
-    private int mYear, mMonth, mDay, mHour, mMinute, revealX, revealY, randomImageButtonClickedTimes, colorDefault;
+    private int mYear, mMonth, mDay, mHour, mMinute, revealX, revealY, randomImageButtonClickedTimes, colorDefault,
+            chosenImageId;
 
     private CharSequence charInput = "";
 
@@ -62,13 +68,15 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
     private List<Event> mEventList = new ArrayList<>();
 
     private boolean isEventEditing, isAlertSetInActivity, isAlertSetInDatabase, isExpiredEventBeingUpdated,
-            savedInstanceIsNull;
+            savedInstanceIsNull, imageLoadedFromUserPhone;
 
     private long eventEditId, eventOrderId, notificationId, eventExpiredId;
 
     private View rootLayout;
 
-    private int[] randomImageId = new int[7];
+    private int[] randomImageIdArray = new int[7];
+
+    private Context mContext;
 
 
     private void showDatePickerDialog() {
@@ -136,15 +144,15 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
 
         //Load up array with out image references
         for (int i = 0; i < 7; i++) {
-            randomImageId[i] = getResources()
+            randomImageIdArray[i] = getResources()
                     .getIdentifier("drawable/" + "add_edit_pic_" + i, null, getPackageName());
         }
 
-        colorDefault = ContextCompat.getColor(AddEditActivity.this, R.color.white);
+        colorDefault = AppHelperClass.getDefaultColorId(AddEditActivity.this);
 
         mBinding = DataBindingUtil.setContentView(AddEditActivity.this, R.layout.activity_add_edit);
 
-        mBinding.addEditCustomImage.setImageResource(randomImageId[0]);
+
 
         mBinding.setClickListener(mClickHandler);
         rootLayout = findViewById(R.id.root_layout);
@@ -163,6 +171,7 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
 
         getWindow().setNavigationBarColor(getResources().getColor(R.color.app_theme_buttons));
         getWindow().setStatusBarColor(getResources().getColor(R.color.app_theme_buttons));
+
     }
 
     @Override
@@ -245,10 +254,12 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
 
     }
 
+    //Here we are retrieving the list of data from DB
     private void processDbResult(final List<ExpiredEvents> expiredEvents, final List<Event> currentEvent) {
         mEventList.clear();
         long millis = 0;
 
+        //Expired Events loaded here
         if (expiredEvents != null) {
 
             for (ExpiredEvents expired : expiredEvents) {
@@ -260,7 +271,7 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
             isExpiredEventBeingUpdated = true;
             setUpUi(millis);
 
-
+            //Ongoing events loaded here
         } else if (currentEvent != null) {
             mEventList.addAll(currentEvent);
 
@@ -270,6 +281,7 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
                 eventOrderId = event.getEventOrderId();
                 isAlertSetInDatabase = event.isAlertSet();
                 notificationId = event.getNotificationId();
+                chosenImageId = event.getImageId();
                 millis = event.getMillisLeft();
             }
 
@@ -324,6 +336,7 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
             revealY = intent.getIntExtra(EXTRA_CIRCULAR_REVEAL_Y, 0);
 
             processActivityInfo(revealX, revealY);
+            mBinding.addEditCustomImage.setBackgroundResource(randomImageIdArray[0]);
 
         }
     }
@@ -427,6 +440,8 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
             savedInstanceIsNull = false;
         }
 
+        mContext = AddEditActivity.this;
+
         startActivityInitProcess();
 
         if (savedInstanceState != null) {
@@ -486,8 +501,11 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
     }
 
     private void updateEventDb() {
-        Event event = new Event(eventOrderId, futureTime, millisAtTimeOfCreation, chosenTitle);
+        Event event = new Event(eventOrderId, futureTime, millisAtTimeOfCreation, chosenTitle,
+                chosenImageId, colorDefault,
+                AppHelperClass.getRawDateString(mYear, mMonth, mDay, mHour, mMinute));
         event.setID(eventEditId);
+        event.setImageLoadedFromUserPhone(imageLoadedFromUserPhone);
 
         //Cancel notification
         if (!isAlertSetInActivity && isAlertSetInDatabase) {
@@ -507,7 +525,11 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
 
 
     private void saveData() {
-        Event event = new Event(eventOrderId, futureTime, millisAtTimeOfCreation, chosenTitle);
+        Event event = new Event(eventOrderId, futureTime, millisAtTimeOfCreation, chosenTitle,
+                randomImageIdArray[randomImageButtonClickedTimes], colorDefault,
+                AppHelperClass.getRawDateString(mYear, mMonth, mDay, mHour, mMinute));
+
+        event.setImageLoadedFromUserPhone(imageLoadedFromUserPhone);
         event.setNotificationId(notificationId);
         if (isAlertSetInActivity) {
             event.setAlertSet(true);
@@ -579,6 +601,7 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
         outState.putInt("mHour", mHour);
         outState.putInt("mMinute", mMinute);
         outState.putInt("randomImageButtonClickedTimes", randomImageButtonClickedTimes);
+        outState.putInt("chosenImageId", chosenImageId);
 
         outState.putCharSequence("charInput", charInput);
 
@@ -593,6 +616,7 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
         outState.putBoolean("isAlertSetInActivity", isAlertSetInActivity);
         outState.putBoolean("isAlertSetInDatabase", isAlertSetInDatabase);
         outState.putBoolean("isExpiredEventBeingUpdated", isExpiredEventBeingUpdated);
+        outState.putBoolean("imageLoadedFromUserPhone", imageLoadedFromUserPhone);
     }
 
     private void loadDestroyedData(final Bundle savedInstanceState) {
@@ -601,6 +625,7 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
         mDay = savedInstanceState.getInt("mDay", mConstants.DEFAULT_VALUE);
         mHour = savedInstanceState.getInt("mHour", mConstants.DEFAULT_VALUE);
         mMinute = savedInstanceState.getInt("mMinute", mConstants.DEFAULT_VALUE);
+        chosenImageId = savedInstanceState.getInt("chosenImageId", mConstants.DEFAULT_VALUE);
         randomImageButtonClickedTimes = savedInstanceState
                 .getInt("randomImageButtonClickedTimes", mConstants.DEFAULT_VALUE);
 
@@ -615,6 +640,7 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
 
         isEventEditing = savedInstanceState.getBoolean("isEventEditing", isEventEditing);
         isAlertSetInActivity = savedInstanceState.getBoolean("isAlertSetInActivity", isAlertSetInActivity);
+        imageLoadedFromUserPhone = savedInstanceState.getBoolean("imageLoadedFromUserPhone", imageLoadedFromUserPhone);
         isAlertSetInDatabase = savedInstanceState.getBoolean("isAlertSetInDatabase", isAlertSetInDatabase);
         isExpiredEventBeingUpdated = savedInstanceState
                 .getBoolean("isExpiredEventBeingUpdated", isExpiredEventBeingUpdated);
@@ -635,14 +661,24 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
 
         public void randomBackground(View view) {
             randomImageButtonClickedTimes++;
-            if (randomImageButtonClickedTimes >= randomImageId.length) {
+            if (randomImageButtonClickedTimes >= randomImageIdArray.length) {
                 randomImageButtonClickedTimes = 0;
             }
-            mBinding.addEditCustomImage.setImageResource(randomImageId[randomImageButtonClickedTimes]);
+            chosenImageId = randomImageIdArray[randomImageButtonClickedTimes];
+            imageLoadedFromUserPhone = false;
+            if (AppHelperClass.checkIfUserBitmapImageExists(mContext)){
+                AppHelperClass.deleteUserBitmapImage(mContext);
+            }
+
+            mBinding.addEditCustomImage.setBackgroundResource(chosenImageId);
         }
 
         public void pickColorButton(View view) {
             showColorPickerDialog();
+        }
+
+        public void addImageClicked(View view) {
+            getImageFromUserPhone();
         }
 
         private void showColorPickerDialog() {
@@ -656,7 +692,7 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
                         @Override
                         public void onOk(final AmbilWarnaDialog dialog, final int color) {
                             colorDefault = color;
-                            mBinding.colorBtn.setBackgroundColor(colorDefault);
+                            mBinding.chosenColorTextView.setTextColor(colorDefault);
                         }
                     });
 
@@ -665,6 +701,14 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
 
         }
 
+
+    }
+
+    private void getImageFromUserPhone() {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "Select Picture"), DEFAULT_IMG_ID);
 
     }
 
@@ -678,12 +722,58 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
 
     private void updateOtherUI() {
         mBinding.inputNameEtext.setText(charInput);
-        mBinding.addEditCustomImage.setImageResource(randomImageId[randomImageButtonClickedTimes]);
+        mBinding.chosenColorTextView.setTextColor(colorDefault);
+        Bitmap bitmap = AppHelperClass.getUserBitmapImage(AddEditActivity.this);
+
+        if (bitmap != null) {
+            mBinding.addEditCustomImage.setImageBitmap(bitmap);
+        } else {
+            mBinding.addEditCustomImage.setBackgroundResource(chosenImageId);
+        }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         Log.i("cycle", "onDestroy: ");
+    }
+
+    @Override
+    protected void onActivityResult(final int requestCode, final int resultCode, @Nullable final Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == DEFAULT_IMG_ID && data != null) {
+
+            try {
+                Uri uri = null; //Need to save this URI into shared preferences in order to load the image back up.
+                if (data != null) {
+                    uri = data.getData();
+                }
+                Bitmap bitmap = null;
+
+                if (android.os.Build.VERSION.SDK_INT >= 29) {
+                    // To handle deprication use
+                    ImageDecoder.Source source = ImageDecoder
+                            .createSource(AddEditActivity.this.getContentResolver(), uri);
+                    bitmap = ImageDecoder.decodeBitmap(source);
+                } else {
+                    // Use older version
+                    bitmap = MediaStore.Images.Media.getBitmap(AddEditActivity.this.getContentResolver(), uri);
+
+                }
+
+                if (!AppHelperClass.saveUserImageIntoSharedPreferences(bitmap, AddEditActivity.this)) {
+                    throw new IOException();
+                } else {
+                    mBinding.addEditCustomImage.setImageBitmap(bitmap);
+                    imageLoadedFromUserPhone = true;
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                Log.i("error_tag", "Load image failed: " + e);
+                Toast.makeText(this, "unable to load image", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 }

@@ -5,6 +5,10 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.opengl.Matrix;
 import android.os.Build;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
@@ -16,6 +20,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
+import android.view.animation.AnimationUtils;
 import android.widget.TableLayout;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
@@ -25,8 +32,10 @@ import android.os.Bundle;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.SearchView.OnQueryTextListener;
 import androidx.appcompat.widget.Toolbar;
+import androidx.constraintlayout.solver.widgets.Rectangle;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.ActivityOptionsCompat;
+import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -40,12 +49,18 @@ import com.daimajia.androidanimations.library.Techniques;
 import com.daimajia.androidanimations.library.YoYo;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayout.OnTabSelectedListener;
+import com.google.android.material.tabs.TabLayout.Tab;
 import project.awesomecountdown.AddEditActivity.ClickHandler;
 import project.awesomecountdown.databinding.ActivityMainBinding;
 
 public class MainActivity extends ModelActivity implements MyConstants {
 
     private static final String TAB_TITLES[] = new String[]{"Countdown", "Events", "Expired"};
+
+    private static final int[] TAB_ICONS = {R.drawable.tab_icon_countd, R.drawable.tab_icon_event,
+            R.drawable.tab_icon_expired};
+
 
     private ActivityMainBinding mMainBinding;
 
@@ -60,6 +75,8 @@ public class MainActivity extends ModelActivity implements MyConstants {
     private ViewPager mViewPager;
 
     private int viewPagerPosition;
+
+    private TabLayout mTabLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,6 +104,7 @@ public class MainActivity extends ModelActivity implements MyConstants {
             getSupportActionBar().setDisplayShowTitleEnabled(true);
         }
 
+
         getWindow().setNavigationBarColor(getResources().getColor(R.color.app_theme_primary));
         getWindow().setStatusBarColor(getResources().getColor(R.color.app_theme_sub));
 
@@ -101,11 +119,51 @@ public class MainActivity extends ModelActivity implements MyConstants {
             mViewPager.setAdapter(pagerAdapter);
         }
 
-        TabLayout tabLayout = findViewById(R.id.tabs);
-        if (tabLayout != null) {
-            tabLayout.setupWithViewPager(mViewPager);
+        mTabLayout = findViewById(R.id.tabs);
+        if (mTabLayout != null) {
+            mTabLayout.setupWithViewPager(mViewPager);
+            setUpTabIcons();
+            mTabLayout.setSelectedTabIndicatorColor(ContextCompat.getColor(MainActivity.this,R.color.tab_countdown));
+
+            mTabLayout.addOnTabSelectedListener(new OnTabSelectedListener() {
+                @Override
+                public void onTabSelected(final Tab tab) {
+                    final View view = tab.view;
+                    YoYo.with(Techniques.Bounce).playOn(view);
+
+                    //Tab layout indicator colors
+                    int tabPosition = mTabLayout.getSelectedTabPosition();
+                    switch (tabPosition){
+                        case 0:
+                            mTabLayout.setSelectedTabIndicatorColor(ContextCompat.getColor(MainActivity.this,R.color.tab_countdown));
+                            break;
+                        case 1:
+                            mTabLayout.setSelectedTabIndicatorColor(ContextCompat.getColor(MainActivity.this,R.color.tab_event));
+                            break;
+                        case 2:
+                            mTabLayout.setSelectedTabIndicatorColor(ContextCompat.getColor(MainActivity.this,R.color.tab_expired));
+                            break;
+                    }
+
+                }
+
+                @Override
+                public void onTabUnselected(final Tab tab) {
+                }
+
+                @Override
+                public void onTabReselected(final Tab tab) {
+
+                }
+            });
         }
 
+    }
+
+    private void setUpTabIcons() {
+        for (int x = 0; x<3; x++){
+            mTabLayout.getTabAt(x).setIcon(TAB_ICONS[x]);
+        }
     }
 
 
@@ -241,11 +299,6 @@ public class MainActivity extends ModelActivity implements MyConstants {
             return null;
         }
 
-        @Nullable
-        @Override
-        public CharSequence getPageTitle(final int position) {
-            return TAB_TITLES[position];
-        }
     }
 
     @Override

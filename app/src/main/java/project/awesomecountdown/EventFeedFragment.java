@@ -29,7 +29,6 @@ import project.awesomecountdown.ticketmaster.model.embedded.TicketMasterEvents;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.http.Url;
 
 
 /**
@@ -142,12 +141,17 @@ public class EventFeedFragment extends ModelFragment
                     String rawTimeFormat = mEventFeedDetails.get(adapterPositionOfItemSelected).getEventLocalTime()
                             .trim();
 
+                    String rawDateString = rawDateFormat + " · " + rawTimeFormat + " GMT";
+
                     long futureMillis = getTimeStamp(rawTimeFormat, rawDateFormat);
 
                     if (futureMillis != 0) {
                         long millisAtTimeOfCreation = futureMillis - System.currentTimeMillis();
 
-                        Event event = new Event(eventOrderId, futureMillis, millisAtTimeOfCreation, eventTitle);
+                        int defaultColor = AppHelperClass.getDefaultColorId(getActivity());
+
+                        Event event = new Event(eventOrderId, futureMillis, millisAtTimeOfCreation, eventTitle,
+                                DEFAULT_IMG_ID, defaultColor, rawDateString);
                         event.setNotificationId(notificationId);
                         event.setEventUrl(eventUrl);
                         event.setEventLocation(eventLocation);
@@ -201,14 +205,12 @@ public class EventFeedFragment extends ModelFragment
 
         if (URLUtil.isValidUrl(url)) {
             share.putExtra(Intent.EXTRA_TEXT, url);
-        }else{
+        } else {
             share.putExtra(Intent.EXTRA_TEXT, eventTitle);
         }
 
         // Add data to the intent, the receiving app will decide
         // what to do with it.
-
-
 
         startActivity(Intent.createChooser(share, "Share Event!"));
 

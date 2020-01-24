@@ -161,7 +161,7 @@ public class HomeFragment extends ModelFragment
         mTransactionViewModel.activityTransition.observe(getViewLifecycleOwner(), new Observer<Boolean>() {
             @Override
             public void onChanged(final Boolean aBoolean) {
-                if (aBoolean){
+                if (aBoolean) {
                     Log.i("transit", "onChanged: " + aBoolean);
                     updateDatabase();
                 }
@@ -212,11 +212,12 @@ public class HomeFragment extends ModelFragment
                 ExpiredEvents expiredEvents = new ExpiredEvents(ev.getEventTitle(), ev.getMillisLeft());
                 mEventViewModel.addExpiredEvent(expiredEvents);
                 ev_iter.remove();
+
+                mEventAdapter.submitList(sortedEventList);
+                mEventAdapter.notifyDataSetChanged();
             }
         }
 
-        mEventAdapter.submitList(sortedEventList);
-        mEventAdapter.notifyDataSetChanged();
 
     }
 

@@ -75,6 +75,9 @@ dependencies {
     //Lottie
     implementation 'com.airbnb.android:lottie:2.8.0'
 
+    //Expandable Layout
+    //https://github.com/AAkira/ExpandableLayout
+    implementation 'com.github.aakira:expandable-layout:1.6.0@aar'
 
 
 }

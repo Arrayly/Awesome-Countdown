@@ -9,6 +9,7 @@ import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.ImageDecoder;
 import android.net.Uri;
 import android.os.Handler;
@@ -32,7 +33,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import android.os.Bundle;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
@@ -68,13 +69,15 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
     private List<Event> mEventList = new ArrayList<>();
 
     private boolean isEventEditing, isAlertSetInActivity, isAlertSetInDatabase, isExpiredEventBeingUpdated,
-            savedInstanceIsNull, imageLoadedFromUserPhone;
+            savedInstanceIsNull, imageLoadedFromUserPhone, layoutExpanded;
 
     private long eventEditId, eventOrderId, notificationId, eventExpiredId;
 
     private View rootLayout;
 
     private int[] randomImageIdArray = new int[7];
+
+    int expanded = 0;
 
     private Context mContext;
 
@@ -151,20 +154,12 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
         colorDefault = AppHelperClass.getDefaultColorId(AddEditActivity.this);
 
         mBinding = DataBindingUtil.setContentView(AddEditActivity.this, R.layout.activity_add_edit);
-
-
+        mBinding.addEditExpandableLayout.toggle();
 
         mBinding.setClickListener(mClickHandler);
         rootLayout = findViewById(R.id.root_layout);
         if (!savedInstanceIsNull) {
             rootLayout.setVisibility(View.GONE);
-        }
-        Toolbar toolbar = findViewById(R.id.AddEdit_toolbar);
-        if (toolbar != null) {
-            setSupportActionBar(toolbar);
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setHomeButtonEnabled(true);
-
         }
 
         //Set random image in our cardView
@@ -224,7 +219,13 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
             @Override
             public void onCheckedChanged(final CompoundButton buttonView, final boolean isChecked) {
                 isAlertSetInActivity = isChecked;
-                Toast.makeText(AddEditActivity.this, "Alert set Succesfully!", Toast.LENGTH_SHORT).show();
+                if (isChecked) {
+                    Toast.makeText(AddEditActivity.this, "Alert set Succesfully!", Toast.LENGTH_SHORT).show();
+                    mBinding.alertSwitch.setChipBackgroundColorResource(R.color.tab_expired);
+                } else {
+                    mBinding.alertSwitch.setChipBackgroundColorResource(R.color.app_theme_buttons);
+                }
+
             }
         });
 
@@ -288,6 +289,7 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
             if (isAlertSetInDatabase) {
                 isAlertSetInActivity = true;
                 mBinding.alertSwitch.toggle();
+                mBinding.alertSwitch.setChipBackgroundColorResource(R.color.tab_expired);
             }
 
             setUpUi(millis);
@@ -449,30 +451,12 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
         }
     }
 
-    @Override
-    public boolean onOptionsItemSelected(@NonNull final MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                onBackPressed();
-
-            case R.id.finish_edit:
-                validationProcessor();
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
 
     private void unRevealActivity() {
         HideSoftKeyboard.hideKeyboard(this);
         onBackPressed();
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(final Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.add_edit_menu, menu);
-        return true;
-    }
 
     private void validationProcessor() {
         Calendar c = Calendar.getInstance();
@@ -511,7 +495,6 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
         if (!isAlertSetInActivity && isAlertSetInDatabase) {
             event.setAlertSet(false);
             cancelNotification();
-            event.setAlertSet(false);
 
             //update Notification
         } else {
@@ -640,7 +623,8 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
 
         isEventEditing = savedInstanceState.getBoolean("isEventEditing", isEventEditing);
         isAlertSetInActivity = savedInstanceState.getBoolean("isAlertSetInActivity", isAlertSetInActivity);
-        imageLoadedFromUserPhone = savedInstanceState.getBoolean("imageLoadedFromUserPhone", imageLoadedFromUserPhone);
+        imageLoadedFromUserPhone = savedInstanceState
+                .getBoolean("imageLoadedFromUserPhone", imageLoadedFromUserPhone);
         isAlertSetInDatabase = savedInstanceState.getBoolean("isAlertSetInDatabase", isAlertSetInDatabase);
         isExpiredEventBeingUpdated = savedInstanceState
                 .getBoolean("isExpiredEventBeingUpdated", isExpiredEventBeingUpdated);
@@ -660,14 +644,20 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
         }
 
         public void randomBackground(View view) {
+            YoYo.with(Techniques.Pulse)
+                    .duration(100)
+                    .playOn(mBinding.backgroundBtn);
+
             randomImageButtonClickedTimes++;
             if (randomImageButtonClickedTimes >= randomImageIdArray.length) {
                 randomImageButtonClickedTimes = 0;
             }
             chosenImageId = randomImageIdArray[randomImageButtonClickedTimes];
             imageLoadedFromUserPhone = false;
-            if (AppHelperClass.checkIfUserBitmapImageExists(mContext)){
+
+            if (AppHelperClass.checkIfUserBitmapImageExists(mContext)) {
                 AppHelperClass.deleteUserBitmapImage(mContext);
+                mBinding.addEditCustomImage.setImageBitmap(null);
             }
 
             mBinding.addEditCustomImage.setBackgroundResource(chosenImageId);
@@ -675,10 +665,36 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
 
         public void pickColorButton(View view) {
             showColorPickerDialog();
+            YoYo.with(Techniques.Wobble)
+                    .duration(600)
+                    .playOn(mBinding.colorBtn);
         }
 
         public void addImageClicked(View view) {
             getImageFromUserPhone();
+        }
+
+        public void createCountdownClicked(View view) {
+            validationProcessor();
+        }
+
+        public void expandIconClicked(View view) {
+            expanded++;
+
+            if (expanded == 1) {
+                YoYo.with(Techniques.Wobble).duration(600)
+                        .playOn(mBinding.expandingIcon);
+                mBinding.addEditExpandableLayout.toggle();
+
+            } else {
+                YoYo.with(Techniques.Wobble).duration(600)
+                        .playOn(mBinding.expandingIcon);
+                mBinding.addEditExpandableLayout.toggle();
+
+                expanded = 0;
+            }
+
+
         }
 
         private void showColorPickerDialog() {
@@ -698,10 +714,11 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
 
             ambilWarnaDialog.show();
 
-
         }
-
-
+        public void setAlertClicked(View view){
+            YoYo.with(Techniques.Wobble).duration(500)
+                    .playOn(mBinding.alertSwitch);
+        }
     }
 
     private void getImageFromUserPhone() {
@@ -729,6 +746,11 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
             mBinding.addEditCustomImage.setImageBitmap(bitmap);
         } else {
             mBinding.addEditCustomImage.setBackgroundResource(chosenImageId);
+        }
+
+        if (isAlertSetInActivity) {
+            mBinding.alertSwitch.toggle();
+            mBinding.alertSwitch.setChipBackgroundColorResource(R.color.tab_expired);
         }
     }
 

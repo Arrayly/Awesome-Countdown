@@ -107,4 +107,9 @@ public class AppHelperClass implements MyConstants {
 
         return imageExists;
     }
+
+
+    public static int getFabWidth(Context context) {
+        return (int) context.getResources().getDimension(R.dimen.fab_size);
+    }
 }

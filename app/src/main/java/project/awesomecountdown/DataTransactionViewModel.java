@@ -15,13 +15,13 @@ public class DataTransactionViewModel extends AndroidViewModel {
 
     public MutableLiveData<Boolean> deleteAllEventsSelected = new MutableLiveData<>();
 
-    public MutableLiveData<Boolean> activityTransition = new MutableLiveData<>();
-
     public MutableLiveData<String> searchQueryTabOne = new MutableLiveData<>();
 
     public MutableLiveData<String> searchQueryTabTwo = new MutableLiveData<>();
 
     public MutableLiveData<String> searchQueryTabThree = new MutableLiveData<>();
+
+    public MutableLiveData<Integer> viewPagerPosition = new MutableLiveData<>();
 
     public DataTransactionViewModel(@NonNull final Application application) {
         super(application);

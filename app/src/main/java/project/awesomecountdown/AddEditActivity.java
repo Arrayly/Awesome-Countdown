@@ -2,17 +2,30 @@ package project.awesomecountdown;
 
 import android.animation.Animator;
 import android.animation.Animator.AnimatorListener;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.TimeInterpolator;
+import android.animation.ValueAnimator;
+import android.animation.ValueAnimator.AnimatorUpdateListener;
 import android.app.AlarmManager;
 import android.app.DatePickerDialog;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BlendMode;
+import android.graphics.BlendModeColorFilter;
 import android.graphics.Color;
 import android.graphics.ImageDecoder;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuff.Mode;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
+import android.provider.CalendarContract.Colors;
 import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -23,8 +36,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnFocusChangeListener;
 import android.view.ViewAnimationUtils;
+import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.animation.AccelerateInterpolator;
+import android.view.animation.Animation;
+import android.view.animation.Interpolator;
+import android.view.animation.OvershootInterpolator;
+import android.view.animation.RotateAnimation;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.DatePicker;
@@ -35,10 +53,14 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
+import androidx.databinding.adapters.ViewGroupBindingAdapter.OnAnimationEnd;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import com.daimajia.androidanimations.library.Techniques;
 import com.daimajia.androidanimations.library.YoYo;
+import com.github.aakira.expandablelayout.ExpandableLayoutListener;
+import com.github.aakira.expandablelayout.ExpandableLayoutListenerAdapter;
+import com.squareup.picasso.Picasso;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -55,7 +77,7 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
 
     private MyConstants mConstants;
 
-    private int mYear, mMonth, mDay, mHour, mMinute, revealX, revealY, randomImageButtonClickedTimes, colorDefault,
+    private int mYear, mMonth, mDay, mHour, mMinute, randomImageButtonClickedTimes, colorDefault,
             chosenImageId;
 
     private CharSequence charInput = "";
@@ -64,12 +86,12 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
 
     private long futureTime, millisAtTimeOfCreation;
 
-    private String chosenTitle;
+    private String chosenTitle, imageUrl;
 
     private List<Event> mEventList = new ArrayList<>();
 
     private boolean isEventEditing, isAlertSetInActivity, isAlertSetInDatabase, isExpiredEventBeingUpdated,
-            savedInstanceIsNull, imageLoadedFromUserPhone, layoutExpanded;
+            savedInstanceIsNull, imageLoadedFromUserPhone, imageLoadedFromUrl;
 
     private long eventEditId, eventOrderId, notificationId, eventExpiredId;
 
@@ -105,6 +127,7 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
                     }
                 }, yr, mth, day);
         datePickerDialog.show();
+
         mBinding.inputDateEtext.clearFocus();
     }
 
@@ -144,6 +167,7 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
     @Override
     protected void onViewInit() {
         super.onViewInit();
+        mBinding = DataBindingUtil.setContentView(AddEditActivity.this, R.layout.activity_add_edit);
 
         //Load up array with out image references
         for (int i = 0; i < 7; i++) {
@@ -151,9 +175,14 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
                     .getIdentifier("drawable/" + "add_edit_pic_" + i, null, getPackageName());
         }
 
+        if (savedInstanceIsNull) {
+            YoYo.with(Techniques.FadeOutLeft).duration(300).playOn(mBinding.rootLayout2);
+        } else {
+            mBinding.rootLayout2.setVisibility(View.INVISIBLE);
+        }
+
         colorDefault = AppHelperClass.getDefaultColorId(AddEditActivity.this);
 
-        mBinding = DataBindingUtil.setContentView(AddEditActivity.this, R.layout.activity_add_edit);
         mBinding.addEditExpandableLayout.toggle();
 
         mBinding.setClickListener(mClickHandler);
@@ -164,8 +193,8 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
 
         //Set random image in our cardView
 
-        getWindow().setNavigationBarColor(getResources().getColor(R.color.app_theme_buttons));
-        getWindow().setStatusBarColor(getResources().getColor(R.color.app_theme_buttons));
+        getWindow().setNavigationBarColor(getResources().getColor(R.color.app_theme_primary));
+        getWindow().setStatusBarColor(getResources().getColor(R.color.app_theme_sub));
 
     }
 
@@ -184,6 +213,9 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
             @Override
             public void onFocusChange(final View v, final boolean hasFocus) {
                 if (hasFocus) {
+                    YoYo.with(Techniques.Pulse)
+                            .duration(400)
+                            .playOn(mBinding.inputTimeLayout);
                     showTimePickerDialog();
                 }
             }
@@ -193,7 +225,21 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
             @Override
             public void onFocusChange(final View v, final boolean hasFocus) {
                 if (hasFocus) {
+                    YoYo.with(Techniques.Pulse)
+                            .duration(400)
+                            .playOn(mBinding.inputDateLayout);
                     showDatePickerDialog();
+                }
+            }
+        });
+
+        mBinding.inputNameEtext.setOnFocusChangeListener(new OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(final View v, final boolean hasFocus) {
+                if (hasFocus) {
+                    YoYo.with(Techniques.Pulse)
+                            .duration(400)
+                            .playOn(mBinding.inputNameLayout);
                 }
             }
         });
@@ -266,6 +312,8 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
             for (ExpiredEvents expired : expiredEvents) {
                 charInput = expired.getEventTitle();
                 eventExpiredId = expired.getID();
+                imageUrl = expired.getImageUrl();
+                chosenImageId = expired.getImageId();
                 millis = expired.getMillisLeft();
             }
 
@@ -279,24 +327,33 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
             for (Event event : currentEvent) {
                 charInput = event.getEventTitle();
                 eventEditId = event.getID();
+                imageUrl = event.getImgUrl();
                 eventOrderId = event.getEventOrderId();
                 isAlertSetInDatabase = event.isAlertSet();
                 notificationId = event.getNotificationId();
                 chosenImageId = event.getImageId();
-                millis = event.getMillisLeft();
-            }
 
-            if (isAlertSetInDatabase) {
-                isAlertSetInActivity = true;
-                mBinding.alertSwitch.toggle();
-                mBinding.alertSwitch.setChipBackgroundColorResource(R.color.tab_expired);
+                millis = event.getMillisLeft();
+
             }
 
             setUpUi(millis);
 
         }
 
+        if (isAlertSetInDatabase) {
+            isAlertSetInActivity = true;
+            mBinding.alertSwitch.toggle();
+            mBinding.alertSwitch.setChipBackgroundColorResource(R.color.tab_expired);
+        }
 
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            Picasso.get().load(imageUrl).into(mBinding.addEditCustomImage);
+            imageLoadedFromUrl = true;
+        } else {
+
+            loadDefaultImage();
+        }
     }
 
     private void setUpUi(long millis) {
@@ -319,109 +376,29 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
     private void checkIntent() {
         Intent intent = getIntent();
         if (intent.hasExtra(CHOSEN_EVENT_ID)) {
-            setTitle("Edit Event");
             long id = intent.getLongExtra(mConstants.CHOSEN_EVENT_ID, 0);
+
             if (id != 0) {
                 isEventEditing = true;
                 getEventFromDb(id);
+                mBinding.addEditBtnTextView.setText("Update");
+
             }
         } else if (intent.hasExtra(CHOSEN_EXPIRED_EVENT_ID)) {
-            setTitle("Update Event");
             long id = intent.getLongExtra(CHOSEN_EXPIRED_EVENT_ID, 0);
             if (id != 0) {
                 getExpiredEventFromDb(id);
+                mBinding.addEditDeleteEventIcon.setVisibility(View.VISIBLE);
+                mBinding.addEditBtnTextView.setText("Update");
             }
-        } else if (intent.hasExtra(EXTRA_CIRCULAR_REVEAL_X) && intent.hasExtra(EXTRA_CIRCULAR_REVEAL_Y)
-                && savedInstanceIsNull) {
-            rootLayout.setVisibility(View.INVISIBLE);
-            revealX = intent.getIntExtra(EXTRA_CIRCULAR_REVEAL_X, 0);
-            revealY = intent.getIntExtra(EXTRA_CIRCULAR_REVEAL_Y, 0);
 
-            processActivityInfo(revealX, revealY);
-            mBinding.addEditCustomImage.setBackgroundResource(randomImageIdArray[0]);
-
-        }
-    }
-
-    private void processActivityInfo(final int revealX, final int revealY) {
-        ViewTreeObserver viewTreeObserver = rootLayout.getViewTreeObserver();
-
-        if (viewTreeObserver.isAlive()) {
-            viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                @Override
-                public void onGlobalLayout() {
-                    revealActivity(revealX, revealY);
-                    rootLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                }
-            });
         } else {
-            rootLayout.setVisibility(View.VISIBLE);
+            loadDefaultImage();
         }
     }
 
-    protected void revealActivity(final int revealX, final int revealY) {
-        float finalRadius = (float) (Math.max(rootLayout.getWidth(), rootLayout.getHeight()) * 1.1);
-
-        // create the animator for this view (the start radius is zero)
-        Animator circularReveal = ViewAnimationUtils
-                .createCircularReveal(rootLayout, revealX, revealY, 0, finalRadius);
-        circularReveal.setDuration(300);
-        circularReveal.setInterpolator(new AccelerateInterpolator());
-
-        // make the view visible and start the animation
-        rootLayout.setVisibility(View.VISIBLE);
-
-        circularReveal.addListener(new AnimatorListener() {
-            @Override
-            public void onAnimationStart(final Animator animation) {
-
-            }
-
-            @Override
-            public void onAnimationEnd(final Animator animation) {
-                FadeOutView();
-            }
-
-            @Override
-            public void onAnimationCancel(final Animator animation) {
-
-            }
-
-            @Override
-            public void onAnimationRepeat(final Animator animation) {
-
-            }
-        });
-
-        circularReveal.start();
-
-    }
-
-    private void FadeOutView() {
-        YoYo.with(Techniques.FadeOut)
-                .duration(300)
-                .withListener(new AnimatorListener() {
-                    @Override
-                    public void onAnimationStart(final Animator animation) {
-
-                    }
-
-                    @Override
-                    public void onAnimationEnd(final Animator animation) {
-                        rootLayout.setVisibility(View.GONE);
-                    }
-
-                    @Override
-                    public void onAnimationCancel(final Animator animation) {
-
-                    }
-
-                    @Override
-                    public void onAnimationRepeat(final Animator animation) {
-
-                    }
-                })
-                .playOn(rootLayout);
+    private void loadDefaultImage() {
+        mBinding.addEditCustomImage.setBackgroundResource(randomImageIdArray[0]);
     }
 
 
@@ -453,12 +430,18 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
 
 
     private void unRevealActivity() {
-        HideSoftKeyboard.hideKeyboard(this);
-        onBackPressed();
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                HideSoftKeyboard.hideKeyboard(AddEditActivity.this);
+                onBackPressed();
+            }
+        }, 100);
+
     }
 
 
-    private void validationProcessor() {
+    private boolean validationProcessor() {
         Calendar c = Calendar.getInstance();
         c.set(mYear, mMonth, mDay, mHour, mMinute, DEFAULT_VALUE);
         long chosenMillis = c.getTimeInMillis();
@@ -466,12 +449,18 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
         long diff = chosenMillis - currentMillis;
         if (diff <= 0) {
             Toast.makeText(this, "Invalid End Date. End Date Must Be After Start Date", Toast.LENGTH_SHORT).show();
+            return false;
         } else if (charInput.length() == 0) {
-            mBinding.inputNameEtext.setError("Error");
+            mBinding.inputNameEtext.setError("Please fill");
+            return false;
+
         } else {
             chosenTitle = charInput.toString().trim();
             futureTime = chosenMillis;
             millisAtTimeOfCreation = futureTime - System.currentTimeMillis();
+
+            //If validation successful, update DB and perform animation
+
             if (!isEventEditing) {
                 mViewModel.queryMaxOrderID();
             } else {
@@ -479,9 +468,7 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
             }
         }
 
-        Log.i("TEST", "CURRENT MILLIS: " + currentMillis);
-        Log.i("TEST", "FUTURE MILLIS: " + chosenMillis);
-
+        return true;
     }
 
     private void updateEventDb() {
@@ -490,6 +477,8 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
                 AppHelperClass.getRawDateString(mYear, mMonth, mDay, mHour, mMinute));
         event.setID(eventEditId);
         event.setImageLoadedFromUserPhone(imageLoadedFromUserPhone);
+        event.setImageLoadedFromUrl(imageLoadedFromUrl);
+        event.setImgUrl(imageUrl);
 
         //Cancel notification
         if (!isAlertSetInActivity && isAlertSetInDatabase) {
@@ -501,8 +490,6 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
             setNotification();
         }
         mViewModel.updateEditedEvent(event);
-        unRevealActivity();
-
 
     }
 
@@ -524,8 +511,6 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
         if (isExpiredEventBeingUpdated) {
             mViewModel.deleteExpiredEventById(eventExpiredId);
         }
-
-        unRevealActivity();
     }
 
 
@@ -600,6 +585,7 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
         outState.putBoolean("isAlertSetInDatabase", isAlertSetInDatabase);
         outState.putBoolean("isExpiredEventBeingUpdated", isExpiredEventBeingUpdated);
         outState.putBoolean("imageLoadedFromUserPhone", imageLoadedFromUserPhone);
+        outState.putBoolean("imageLoadedFromUrl", imageLoadedFromUrl);
     }
 
     private void loadDestroyedData(final Bundle savedInstanceState) {
@@ -623,6 +609,7 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
 
         isEventEditing = savedInstanceState.getBoolean("isEventEditing", isEventEditing);
         isAlertSetInActivity = savedInstanceState.getBoolean("isAlertSetInActivity", isAlertSetInActivity);
+        imageLoadedFromUrl = savedInstanceState.getBoolean("imageLoadedFromUrl", imageLoadedFromUrl);
         imageLoadedFromUserPhone = savedInstanceState
                 .getBoolean("imageLoadedFromUserPhone", imageLoadedFromUserPhone);
         isAlertSetInDatabase = savedInstanceState.getBoolean("isAlertSetInDatabase", isAlertSetInDatabase);
@@ -644,29 +631,44 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
         }
 
         public void randomBackground(View view) {
-            YoYo.with(Techniques.Pulse)
-                    .duration(100)
-                    .playOn(mBinding.backgroundBtn);
-
-            randomImageButtonClickedTimes++;
-            if (randomImageButtonClickedTimes >= randomImageIdArray.length) {
-                randomImageButtonClickedTimes = 0;
-            }
-            chosenImageId = randomImageIdArray[randomImageButtonClickedTimes];
+            imageLoadedFromUrl = false;
             imageLoadedFromUserPhone = false;
+
+            mBinding.addEditCustomImage.setImageDrawable(null);
+            randomImageButtonClickedTimes++;
+
+            chosenImageId = randomImageIdArray[randomImageButtonClickedTimes];
+
+            if (randomImageButtonClickedTimes == randomImageIdArray.length - 1) {
+                if (imageUrl != null) {
+                    Picasso.get().load(imageUrl).into(mBinding.addEditCustomImage);
+                    imageLoadedFromUrl = true;
+                } else {
+                    mBinding.addEditCustomImage.setBackgroundResource(chosenImageId);
+                }
+                randomImageButtonClickedTimes = 0;
+
+            } else {
+
+                mBinding.addEditCustomImage.setBackgroundResource(chosenImageId);
+            }
 
             if (AppHelperClass.checkIfUserBitmapImageExists(mContext)) {
                 AppHelperClass.deleteUserBitmapImage(mContext);
                 mBinding.addEditCustomImage.setImageBitmap(null);
             }
 
-            mBinding.addEditCustomImage.setBackgroundResource(chosenImageId);
+            YoYo.with(Techniques.Pulse)
+                    .duration(100)
+                    .playOn(mBinding.backgroundBtn);
+
+
         }
 
         public void pickColorButton(View view) {
             showColorPickerDialog();
-            YoYo.with(Techniques.Wobble)
-                    .duration(600)
+            YoYo.with(Techniques.Pulse)
+                    .duration(100)
                     .playOn(mBinding.colorBtn);
         }
 
@@ -674,26 +676,30 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
             getImageFromUserPhone();
         }
 
+        //Complete new Countdown set up
         public void createCountdownClicked(View view) {
-            validationProcessor();
+
+            if (validationProcessor()) {
+                ActivityTransitionAnimation transitionAnimation = new ActivityTransitionAnimation();
+
+                transitionAnimation.animateButtonWidth();
+                transitionAnimation.fadeOutTextShowProgressDialog();
+                transitionAnimation.nextAction();
+            }
         }
 
         public void expandIconClicked(View view) {
             expanded++;
 
             if (expanded == 1) {
-                YoYo.with(Techniques.Wobble).duration(600)
-                        .playOn(mBinding.expandingIcon);
                 mBinding.addEditExpandableLayout.toggle();
+                mBinding.expandingIcon.setBackgroundResource(R.drawable.minus);
 
             } else {
-                YoYo.with(Techniques.Wobble).duration(600)
-                        .playOn(mBinding.expandingIcon);
                 mBinding.addEditExpandableLayout.toggle();
-
+                mBinding.expandingIcon.setBackgroundResource(R.drawable.plus);
                 expanded = 0;
             }
-
 
         }
 
@@ -715,11 +721,25 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
             ambilWarnaDialog.show();
 
         }
-        public void setAlertClicked(View view){
-            YoYo.with(Techniques.Wobble).duration(500)
+
+        public void setAlertClicked(View view) {
+            YoYo.with(Techniques.Pulse).duration(100)
                     .playOn(mBinding.alertSwitch);
         }
+
+        public void deleteEventIconClicked(View view){
+            mViewModel.deleteExpiredEventById(eventExpiredId);
+            unRevealActivity();
+        }
+
+        public void exitAddEditIconClicked(View view){
+            YoYo.with(Techniques.Pulse).duration(100)
+                    .playOn(mBinding.addEditExitIcon);
+            unRevealActivity();
+        }
     }
+
+
 
     private void getImageFromUserPhone() {
         Intent intent = new Intent();
@@ -796,6 +816,119 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
                 Log.i("error_tag", "Load image failed: " + e);
                 Toast.makeText(this, "unable to load image", Toast.LENGTH_SHORT).show();
             }
+        }
+    }
+
+
+    private class ActivityTransitionAnimation {
+
+        private void animateButtonWidth() {
+            ValueAnimator anim = ValueAnimator.ofInt(mBinding.addEditCreateCountdownBtn.getMeasuredWidth(),
+                    AppHelperClass.getFabWidth(AddEditActivity.this));
+
+            anim.addUpdateListener(new AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(final ValueAnimator animation) {
+                    int val = (Integer) animation.getAnimatedValue();
+                    ViewGroup.LayoutParams layoutParams = mBinding.addEditCreateCountdownBtn.getLayoutParams();
+                    layoutParams.width = val;
+                    mBinding.addEditCreateCountdownBtn.requestLayout();
+                }
+            });
+            anim.setDuration(250);
+            anim.start();
+
+        }
+
+        private void fadeOutTextShowProgressDialog() {
+            YoYo.with(Techniques.FadeOut)
+                    .duration(250)
+                    .withListener(new AnimatorListener() {
+                        @Override
+                        public void onAnimationStart(final Animator animation) {
+
+                        }
+
+                        @Override
+                        public void onAnimationEnd(final Animator animation) {
+                            mBinding.addEditProgressBar.setAlpha(1f);
+
+                            Drawable drawable = mBinding.addEditProgressBar.getIndeterminateDrawable();
+
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                drawable.setColorFilter(new BlendModeColorFilter(
+                                        ContextCompat.getColor(AddEditActivity.this, R.color.white),
+                                        BlendMode.SRC_ATOP));
+                            } else {
+                                drawable.setColorFilter(ContextCompat.getColor(AddEditActivity.this, R.color.white),
+                                        PorterDuff.Mode.SRC_ATOP);
+                            }
+
+                            mBinding.addEditProgressBar.setVisibility(View.VISIBLE);
+                        }
+
+                        @Override
+                        public void onAnimationCancel(final Animator animation) {
+
+                        }
+
+                        @Override
+                        public void onAnimationRepeat(final Animator animation) {
+
+                        }
+                    })
+                    .playOn(mBinding.addEditBtnTextView);
+
+        }
+
+        private void nextAction() {
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    revealButton();
+                    fadeOutProgressDialog();
+                    fadeOutActivityToolbar();
+                }
+            }, 2000);
+        }
+
+        private void fadeOutActivityToolbar() {
+            YoYo.with(Techniques.FadeOutRight).duration(500).playOn(mBinding.addEditCardViewToolbar);
+        }
+
+        private void revealButton() {
+            mBinding.addEditCreateCountdownBtn.setElevation(0f);
+            mBinding.rootLayout.setVisibility(View.VISIBLE);
+
+            int cx = mBinding.rootLayout.getWidth();
+            int cy = mBinding.rootLayout.getHeight();
+
+            int x = (int) (AppHelperClass.getFabWidth(mContext) / 2 + mBinding.addEditCreateCountdownBtn.getX());
+            int y = (int) (AppHelperClass.getFabWidth(mContext) / 2 + mBinding.addEditCreateCountdownBtn.getY());
+
+            float finalRadius = Math.max(cx, cy) * 1.2f;
+
+            Animator reveal = ViewAnimationUtils
+                    .createCircularReveal(mBinding.rootLayout, x, y, AppHelperClass.getFabWidth(mContext),
+                            finalRadius);
+            reveal.setDuration(350);
+            reveal.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(final Animator animation) {
+                    super.onAnimationEnd(animation);
+                    unRevealActivity();
+                }
+            });
+            reveal.start();
+
+
+        }
+
+        private void fadeOutProgressDialog() {
+            YoYo.with(Techniques.FadeOut)
+                    .duration(200)
+                    .playOn(mBinding.addEditProgressBar);
+
         }
     }
 }

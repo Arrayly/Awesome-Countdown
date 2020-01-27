@@ -65,6 +65,10 @@ public class Event {
     @ColumnInfo(name = "imageLoadedFromUserPhone")
     private boolean imageLoadedFromUserPhone;
 
+    @NonNull
+    @ColumnInfo(name = "imageLoadedFromUrl")
+    private boolean imageLoadedFromUrl;
+
 
     public Event(@NonNull final long eventOrderId, @NonNull final long millisLeft,
             @NonNull final long millisAtTimeOfCreation,
@@ -82,6 +86,14 @@ public class Event {
         this.setEventUrl("");
         this.setEventLocation("");
         this.setImgUrl("");
+    }
+
+    public boolean isImageLoadedFromUrl() {
+        return imageLoadedFromUrl;
+    }
+
+    public void setImageLoadedFromUrl(final boolean imageLoadedFromUrl) {
+        this.imageLoadedFromUrl = imageLoadedFromUrl;
     }
 
     public boolean isImageLoadedFromUserPhone() {

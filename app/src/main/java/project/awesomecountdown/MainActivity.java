@@ -1,40 +1,25 @@
 package project.awesomecountdown;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.opengl.Matrix;
-import android.os.Build;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
-import android.os.Handler;
-import android.util.Log;
-import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.animation.Animation;
-import android.view.animation.Animation.AnimationListener;
-import android.view.animation.AnimationUtils;
-import android.widget.TableLayout;
+import android.view.ViewAnimationUtils;
 import android.widget.Toast;
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.SearchView.OnQueryTextListener;
 import androidx.appcompat.widget.Toolbar;
-import androidx.constraintlayout.solver.widgets.Rectangle;
-import androidx.core.app.ActivityCompat;
-import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
@@ -44,21 +29,19 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.viewpager.widget.ViewPager;
 import androidx.viewpager.widget.ViewPager.OnPageChangeListener;
-import com.airbnb.lottie.LottieAnimationView;
 import com.daimajia.androidanimations.library.Techniques;
 import com.daimajia.androidanimations.library.YoYo;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayout.OnTabSelectedListener;
 import com.google.android.material.tabs.TabLayout.Tab;
-import project.awesomecountdown.AddEditActivity.ClickHandler;
 import project.awesomecountdown.databinding.ActivityMainBinding;
 
 public class MainActivity extends ModelActivity implements MyConstants {
 
     private static final String TAB_TITLES[] = new String[]{"Countdown", "Events", "Expired"};
 
-    private static final int[] TAB_ICONS = {R.drawable.tab_icon_countd, R.drawable.tab_icon_event,
+    private static final int[] TAB_ICONS = {R.drawable.tab_layout_countdown_icon, R.drawable.tab_icon_event,
             R.drawable.tab_icon_expired};
 
 
@@ -77,6 +60,8 @@ public class MainActivity extends ModelActivity implements MyConstants {
     private int viewPagerPosition;
 
     private TabLayout mTabLayout;
+
+    private boolean feedFragmentInFocus;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,7 +89,6 @@ public class MainActivity extends ModelActivity implements MyConstants {
             getSupportActionBar().setDisplayShowTitleEnabled(true);
         }
 
-
         getWindow().setNavigationBarColor(getResources().getColor(R.color.app_theme_primary));
         getWindow().setStatusBarColor(getResources().getColor(R.color.app_theme_sub));
 
@@ -123,7 +107,7 @@ public class MainActivity extends ModelActivity implements MyConstants {
         if (mTabLayout != null) {
             mTabLayout.setupWithViewPager(mViewPager);
             setUpTabIcons();
-            mTabLayout.setSelectedTabIndicatorColor(ContextCompat.getColor(MainActivity.this,R.color.tab_countdown));
+            mTabLayout.setSelectedTabIndicatorColor(ContextCompat.getColor(MainActivity.this, R.color.tab_countdown));
 
             mTabLayout.addOnTabSelectedListener(new OnTabSelectedListener() {
                 @Override
@@ -133,15 +117,18 @@ public class MainActivity extends ModelActivity implements MyConstants {
 
                     //Tab layout indicator colors
                     int tabPosition = mTabLayout.getSelectedTabPosition();
-                    switch (tabPosition){
+                    switch (tabPosition) {
                         case 0:
-                            mTabLayout.setSelectedTabIndicatorColor(ContextCompat.getColor(MainActivity.this,R.color.tab_countdown));
+                            mTabLayout.setSelectedTabIndicatorColor(
+                                    ContextCompat.getColor(MainActivity.this, R.color.tab_countdown));
                             break;
                         case 1:
-                            mTabLayout.setSelectedTabIndicatorColor(ContextCompat.getColor(MainActivity.this,R.color.tab_event));
+                            mTabLayout.setSelectedTabIndicatorColor(
+                                    ContextCompat.getColor(MainActivity.this, R.color.tab_event));
                             break;
                         case 2:
-                            mTabLayout.setSelectedTabIndicatorColor(ContextCompat.getColor(MainActivity.this,R.color.tab_expired));
+                            mTabLayout.setSelectedTabIndicatorColor(
+                                    ContextCompat.getColor(MainActivity.this, R.color.tab_expired));
                             break;
                     }
 
@@ -161,7 +148,7 @@ public class MainActivity extends ModelActivity implements MyConstants {
     }
 
     private void setUpTabIcons() {
-        for (int x = 0; x<3; x++){
+        for (int x = 0; x < 3; x++) {
             mTabLayout.getTabAt(x).setIcon(TAB_ICONS[x]);
         }
     }
@@ -219,6 +206,10 @@ public class MainActivity extends ModelActivity implements MyConstants {
                 @Override
                 public void onPageSelected(final int position) {
                     viewPagerPosition = position;
+                    mTransactionViewModel.viewPagerPosition.setValue(position);
+                    if (position == 1){
+                        invalidateOptionsMenu();
+                    }
 
                 }
 
@@ -240,38 +231,9 @@ public class MainActivity extends ModelActivity implements MyConstants {
         }
 
         public void fabClicked(final View view) {
-
-            startAddEditEventActivity(view);
+            MainActivityTransitionAnimation transitionAnimation = new MainActivityTransitionAnimation();
+            transitionAnimation.fadeOutFabandToolbar();
         }
-    }
-
-    private void startAddEditEventActivity(View view) {
-
-        ActivityOptionsCompat options = ActivityOptionsCompat.
-                makeSceneTransitionAnimation(this, view, "transition");
-
-        int revealX = view.getRight() - getDips(44);
-        int revealY = view.getBottom() - getDips(44);
-
-        Intent intent = new Intent(this, AddEditActivity.class);
-
-        intent.putExtra(AddEditActivity.EXTRA_CIRCULAR_REVEAL_X, revealX);
-        intent.putExtra(AddEditActivity.EXTRA_CIRCULAR_REVEAL_Y, revealY);
-
-        ActivityCompat.startActivity(this, intent, options.toBundle());
-
-        mTransactionViewModel.activityTransition.setValue(true);
-        mTransactionViewModel.activityTransition.setValue(false);
-
-
-    }
-
-    private int getDips(int dps) {
-        Resources resources = getResources();
-        return (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP,
-                dps,
-                resources.getDisplayMetrics());
     }
 
     //State pager adapter for fragments
@@ -307,6 +269,13 @@ public class MainActivity extends ModelActivity implements MyConstants {
         inflater.inflate(R.menu.home_menu, menu);
 
         MenuItem item = menu.findItem(R.id.action_search);
+
+        if (feedFragmentInFocus){
+            item.setVisible(true);
+        }else {
+            item.setVisible(false);
+        }
+
         SearchView searchView = (SearchView) item.getActionView();
         searchView.setOnQueryTextListener(new SearchIconQueryListener());
 
@@ -351,6 +320,62 @@ public class MainActivity extends ModelActivity implements MyConstants {
         public boolean onQueryTextChange(final String newText) {
             return false;
         }
+    }
+
+    private class MainActivityTransitionAnimation {
+
+        private void fadeOutFabandToolbar() {
+            YoYo.with(Techniques.FadeOut).duration(450).playOn(mMainBinding.mainAcitivtyAppbar);
+            YoYo.with(Techniques.FadeOut).duration(100).withListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(final Animator animation) {
+                    super.onAnimationEnd(animation);
+                    revealButton();
+                }
+            }).playOn(mMainBinding.MainActivityFab);
+        }
+
+
+        private void revealButton() {
+            mMainBinding.MainActivityFab.setElevation(0f);
+            mMainBinding.mainRootLayout.setVisibility(View.VISIBLE);
+            int cx = mMainBinding.mainRootLayout.getWidth();
+            int cy = mMainBinding.mainRootLayout.getHeight();
+
+            int x = (int) (AppHelperClass.getFabWidth(MainActivity.this) / 2 + mMainBinding.MainActivityFab.getX());
+            int y = (int) (AppHelperClass.getFabWidth(MainActivity.this) / 2 + mMainBinding.MainActivityFab.getY());
+
+            float finalRadius = Math.max(cx, cy) * 1.2f;
+
+            Animator reveal = ViewAnimationUtils
+                    .createCircularReveal(mMainBinding.mainRootLayout, x, y,
+                            AppHelperClass.getFabWidth(MainActivity.this), finalRadius);
+            reveal.setDuration(300);
+            reveal.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(final Animator animation) {
+                    super.onAnimationEnd(animation);
+                    startNewActivity();
+                }
+            });
+            reveal.start();
+
+        }
+    }
+
+    private void startNewActivity() {
+        Intent intent = new Intent(this, AddEditActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+        startActivity(intent);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mMainBinding.mainRootLayout.setVisibility(View.INVISIBLE);
+        YoYo.with(Techniques.FadeIn).duration(500).playOn(mMainBinding.MainActivityFab);
+        YoYo.with(Techniques.FadeIn).duration(300).playOn(mMainBinding.mainAcitivtyAppbar);
+        mMainBinding.MainActivityFab.setElevation(10f);
     }
 }
 

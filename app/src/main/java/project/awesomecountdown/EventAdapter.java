@@ -16,6 +16,9 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.DiffUtil.ItemCallback;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
+import com.squareup.picasso.Picasso;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import project.awesomecountdown.EventAdapter.ViewHolder;
@@ -76,17 +79,22 @@ public class EventAdapter extends ListAdapter<Event, ViewHolder> {
         Log.i("ADAPTER", "onBindViewHolder: ");
         final Event event = getItem(position);
 
-        if (event.isImageLoadedFromUserPhone() && AppHelperClass.checkIfUserBitmapImageExists(mContext)){
+        holder.cardBackgroundImgView.setImageDrawable(null);
+
+        if (event.isImageLoadedFromUserPhone() && AppHelperClass.checkIfUserBitmapImageExists(mContext)) {
             Bitmap bitmap = AppHelperClass.getUserBitmapImage(mContext);
             holder.cardBackgroundImgView.setImageBitmap(bitmap);
-        }else {
+        } else if (event.isImageLoadedFromUrl()) {
+            Picasso.get().load(event.getImgUrl()).into(holder.cardBackgroundImgView);
+
+        } else {
             holder.cardBackgroundImgView.setBackgroundResource(event.getImageId());
         }
 
         int textColor = event.getTextColorId();
         holder.title.setText(event.getEventTitle());
         holder.endDate.setText(event.getDateRawString());
-        if (event.isAlertSet()){
+        if (event.isAlertSet()) {
             holder.reminderImgView.setImageDrawable(mContext.getDrawable(R.drawable.reminder_set_icon));
 
         }
@@ -132,6 +140,7 @@ public class EventAdapter extends ListAdapter<Event, ViewHolder> {
 
     }
 
+
     private void updateView(long timeLeft, ViewHolder holder, long millisAtCreation) {
 
         final long day = TimeUnit.MILLISECONDS.toDays(timeLeft);
@@ -146,15 +155,15 @@ public class EventAdapter extends ListAdapter<Event, ViewHolder> {
                 - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(timeLeft));
 
         if (day >= 1) {
-            holder.time.setText(String.format(Locale.getDefault(), "%d days", day));
+            holder.time.setText(String.format(Locale.getDefault(), "%d d", day));
         } else if (hours >= 1) {
-            holder.time.setText(String.format(Locale.getDefault(), "%d hrs", hours));
+            holder.time.setText(String.format(Locale.getDefault(), "%d h", hours));
         } else if (minutes >= 1) {
-            holder.time.setText(String.format(Locale.getDefault(), "%d min", minutes));
+            holder.time.setText(String.format(Locale.getDefault(), "%d m", minutes));
         } else if (seconds >= 1) {
-            holder.time.setText(String.format(Locale.getDefault(), "%d sec", seconds));
+            holder.time.setText(String.format(Locale.getDefault(), "%d s", seconds));
         } else {
-            holder.time.setText("DONE!");
+            holder.time.setText("");
         }
     }
 

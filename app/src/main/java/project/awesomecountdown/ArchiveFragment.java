@@ -77,6 +77,7 @@ public class ArchiveFragment extends ModelFragment implements MyConstants {
             @Override
             public void onChanged(final List<ExpiredEvents> expiredEvents) {
                 if (expiredEvents != null) {
+                    mExpiredEvents.clear();
                     mExpiredEvents.addAll(expiredEvents);
                     mAdapter.submitList(expiredEvents);
                     mAdapter.notifyDataSetChanged();

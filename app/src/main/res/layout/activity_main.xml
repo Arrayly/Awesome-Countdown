@@ -11,8 +11,8 @@
     </data>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
-        android:layout_width="match_parent"
         android:id="@+id/event_coordinatorLayout"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context=".MainActivity">
 
@@ -45,18 +45,31 @@
         <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:background="@color/white"
             android:clipToPadding="false"
             android:fillViewport="true"
             app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:background="@color/white"
                 android:orientation="vertical">
-                <com.google.android.material.tabs.TabLayout
-                    android:id="@+id/tabs"
-                    app:tabIndicatorHeight="3dp"
+
+                <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="8dp">
+
+                    <com.google.android.material.tabs.TabLayout
+                        android:id="@+id/tabs"
+                        app:tabRippleColor="@color/app_theme_buttons"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:tabIndicatorHeight="3dp" />
+
+                </com.google.android.material.card.MaterialCardView>
 
 
                 <androidx.viewpager.widget.ViewPager
@@ -67,17 +80,24 @@
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>
 
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/MainActivity_Fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="20dp"
+            android:layout_marginTop="20dp"
+            android:elevation="4dp"
+            android:onClick="@{clickListener::fabClicked}"
+            android:src="@drawable/ic_add_black_24dp"
+            app:backgroundTint="@color/app_theme_buttons" />
 
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/MainActivity_Fab"
-                android:layout_width="wrap_content"
-                app:backgroundTint="@color/app_theme_buttons"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom|end"
-                android:layout_margin="20dp"
-                android:layout_marginTop="20dp"
-                android:onClick="@{clickListener::fabClicked}"
-                android:src="@drawable/ic_add_black_24dp" />
+        <View
+            android:id="@+id/main_rootLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/app_theme_buttons"
+            android:visibility="invisible"></View>
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>

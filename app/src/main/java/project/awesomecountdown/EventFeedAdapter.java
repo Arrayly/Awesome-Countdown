@@ -23,7 +23,8 @@ public class EventFeedAdapter extends RecyclerView.Adapter<EventFeedAdapter.View
 
     private List<EventFeedDetails> mEventFeedDetails;
 
-    public EventFeedAdapter(final Context context, final List<EventFeedDetails> eventFeedDetails, EventFeedClickListener listener) {
+    public EventFeedAdapter(final Context context, final List<EventFeedDetails> eventFeedDetails,
+            EventFeedClickListener listener) {
         mContext = context;
         mEventFeedDetails = eventFeedDetails;
         this.mListener = listener;
@@ -52,32 +53,39 @@ public class EventFeedAdapter extends RecyclerView.Adapter<EventFeedAdapter.View
         String eventLocalTime = mEventFeedDetails.get(position).getEventLocalTime();
         String eventImage16_9 = mEventFeedDetails.get(position).getEventImage16_9();
         String eventLocationName = mEventFeedDetails.get(position).getEventLocationName();
-        String displayDate = localDate + " · " + eventLocalTime + " GMT";
+
+        String displayDate = "TBD";
+
+        if (localDate != null) {
+            displayDate = localDate;
+            if (eventLocalTime != null) {
+                displayDate = localDate + " · " + eventLocalTime + " GMT";
+            }
+        }
+
+        holder.date.setText(displayDate);
 
         holder.title.setText(title);
-        holder.date.setText(displayDate);
+
         holder.location.setText(eventLocationName);
 
         holder.dateIcon.setBackground(calendarIcon);
         holder.locationIcon.setBackground(locationIcon);
-
 
         Picasso.get()
                 .load(eventImage16_9)
                 .into(holder.image);
 
 
-
-
-
-
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        TextView title, date,location;
+        TextView title, date, location;
+
         CircleImageView image;
-        ImageView dateIcon,locationIcon;
+
+        ImageView dateIcon, locationIcon;
 
         public ViewHolder(@NonNull final View itemView) {
             super(itemView);
@@ -85,7 +93,6 @@ public class EventFeedAdapter extends RecyclerView.Adapter<EventFeedAdapter.View
             title = itemView.findViewById(R.id.eventfeed_title_txtview);
             date = itemView.findViewById(R.id.eventfeed_rv_startdate_txv);
             location = itemView.findViewById(R.id.eventfeed_rv_location_txv);
-
 
             image = itemView.findViewById(R.id.event_rv_imageview);
             dateIcon = itemView.findViewById(R.id.rv_eventFeed_dateIcon_imgView);

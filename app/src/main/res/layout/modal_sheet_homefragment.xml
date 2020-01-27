@@ -2,7 +2,7 @@
 <layout xmlns:app="http://schemas.android.com/apk/res-auto">
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
-        android:background="@color/colorAccent"
+        android:background="@color/app_theme_primary"
         android:layout_height="wrap_content">
 
         <LinearLayout
@@ -21,7 +21,7 @@
                     android:id="@+id/modalSheet_EditIcon"
                     android:layout_width="25dp"
                     android:layout_height="25dp"
-                    android:src="@drawable/ic_done_black_24dp">
+                    android:src="@drawable/edit_icon_bottomsheet">
                 </ImageView>
 
                 <ImageView
@@ -30,7 +30,7 @@
                     android:layout_marginTop="10dp"
                     android:layout_below="@id/modalSheet_EditIcon"
                     android:layout_height="25dp"
-                    android:src="@drawable/ic_add_black_24dp">
+                    android:src="@drawable/delete_icon_bottomsheet">
                 </ImageView>
 
                 <TextView

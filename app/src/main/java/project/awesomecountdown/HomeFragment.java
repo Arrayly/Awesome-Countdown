@@ -4,7 +4,6 @@ package project.awesomecountdown;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -125,6 +124,16 @@ public class HomeFragment extends ModelFragment
                 sortedEventList.addAll(events);
                 mEventAdapter.submitList(events);
                 mEventAdapter.notifyDataSetChanged();
+                ifEmptyRecyclerViewLoadAnimation();
+            }
+        });
+
+        mTransactionViewModel.viewPagerPosition.observe(getViewLifecycleOwner(), new Observer<Integer>() {
+            @Override
+            public void onChanged(final Integer integer) {
+                if (integer == 1 || integer == 2) {
+                    updateDatabase();
+                }
             }
         });
     }
@@ -157,16 +166,14 @@ public class HomeFragment extends ModelFragment
             }
         });
 
-        //Observe for activity transition from main activity to addEdit activity
-        mTransactionViewModel.activityTransition.observe(getViewLifecycleOwner(), new Observer<Boolean>() {
-            @Override
-            public void onChanged(final Boolean aBoolean) {
-                if (aBoolean) {
-                    Log.i("transit", "onChanged: " + aBoolean);
-                    updateDatabase();
-                }
-            }
-        });
+    }
+
+    private void ifEmptyRecyclerViewLoadAnimation() {
+        if (sortedEventList.size() == 0) {
+            mHomeBinding.homeFragEmptyRvAnimation.setVisibility(View.VISIBLE);
+        } else {
+            mHomeBinding.homeFragEmptyRvAnimation.setVisibility(View.GONE);
+        }
     }
 
     @Override
@@ -197,6 +204,7 @@ public class HomeFragment extends ModelFragment
         recentlyDeletedEvent.add(0, sortedEventList.get(chosenEventPosition));
         deletedEventIDs.add(0, sortedEventList.get(chosenEventPosition).getID());
         sortedEventList.remove(chosenEventPosition);
+        ifEmptyRecyclerViewLoadAnimation();
         mEventAdapter.submitList(sortedEventList);
         mEventAdapter.notifyDataSetChanged();
         showUndoSnackBar();
@@ -209,7 +217,13 @@ public class HomeFragment extends ModelFragment
             Event ev = ev_iter.next();
             if (ev.getID() == id) {
                 deletedEventIDs.add(id);
-                ExpiredEvents expiredEvents = new ExpiredEvents(ev.getEventTitle(), ev.getMillisLeft());
+
+                long millisAtExpiry = System.currentTimeMillis();
+
+                ExpiredEvents expiredEvents = new ExpiredEvents(ev.getEventTitle(), ev.getMillisLeft(),
+                        ev.getImgUrl(), ev.isImageLoadedFromUserPhone(), ev.isImageLoadedFromUrl(), ev.getImageId(),
+                        ev.getTextColorId(), millisAtExpiry);
+
                 mEventViewModel.addExpiredEvent(expiredEvents);
                 ev_iter.remove();
 
@@ -222,10 +236,15 @@ public class HomeFragment extends ModelFragment
     }
 
     private void undoDelete() {
-        deletedEventIDs.remove(0);
-        sortedEventList.add(chosenEventPosition, recentlyDeletedEvent.get(0));
-        mEventAdapter.submitList(sortedEventList);
-        mEventAdapter.notifyDataSetChanged();
+        try {
+            deletedEventIDs.remove(0);
+            sortedEventList.add(chosenEventPosition, recentlyDeletedEvent.get(0));
+            mEventAdapter.submitList(sortedEventList);
+            mEventAdapter.notifyDataSetChanged();
+            ifEmptyRecyclerViewLoadAnimation();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void showUndoSnackBar() {
@@ -274,6 +293,12 @@ public class HomeFragment extends ModelFragment
 
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        ifEmptyRecyclerViewLoadAnimation();
+        updateDatabase();
+    }
 
     @Override
     public void onStop() {

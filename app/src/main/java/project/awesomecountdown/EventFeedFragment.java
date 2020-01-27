@@ -129,13 +129,6 @@ public class EventFeedFragment extends ModelFragment
 
                 if (mEventFeedDetails.size() != 0) {
 
-                    long notificationId = aLong + 1;
-                    long eventOrderId = aLong + 1;
-                    String eventTitle = mEventFeedDetails.get(adapterPositionOfItemSelected).getEventName();
-                    String eventUrl = mEventFeedDetails.get(adapterPositionOfItemSelected).getEventUrl();
-                    String eventLocation = mEventFeedDetails.get(adapterPositionOfItemSelected)
-                            .getEventLocationName();
-
                     String rawDateFormat = mEventFeedDetails.get(adapterPositionOfItemSelected).getEventLocalDate()
                             .trim();
                     String rawTimeFormat = mEventFeedDetails.get(adapterPositionOfItemSelected).getEventLocalTime()
@@ -146,6 +139,14 @@ public class EventFeedFragment extends ModelFragment
                     long futureMillis = getTimeStamp(rawTimeFormat, rawDateFormat);
 
                     if (futureMillis != 0) {
+                        long notificationId = aLong + 1;
+                        long eventOrderId = aLong + 1;
+                        String eventTitle = mEventFeedDetails.get(adapterPositionOfItemSelected).getEventName();
+                        String eventUrl = mEventFeedDetails.get(adapterPositionOfItemSelected).getEventUrl();
+                        String eventLocation = mEventFeedDetails.get(adapterPositionOfItemSelected)
+                                .getEventLocationName();
+                        String imageUrl = mEventFeedDetails.get(adapterPositionOfItemSelected).getEventImage16_9();
+
                         long millisAtTimeOfCreation = futureMillis - System.currentTimeMillis();
 
                         int defaultColor = AppHelperClass.getDefaultColorId(getActivity());
@@ -155,6 +156,8 @@ public class EventFeedFragment extends ModelFragment
                         event.setNotificationId(notificationId);
                         event.setEventUrl(eventUrl);
                         event.setEventLocation(eventLocation);
+                        event.setImgUrl(imageUrl);
+                        event.setImageLoadedFromUrl(true);
 
                         mEventViewModel.addEvent(event);
 

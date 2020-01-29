@@ -42,14 +42,25 @@ public class ExpiredEvents {
     @ColumnInfo(name = "imageId")
     private int imageId;
 
+    @NonNull
+    @ColumnInfo(name = "isLocationSet")
+    private boolean isLocationSet;
+
+    @NonNull
+    @ColumnInfo(name = "eventLocation")
+    private String eventLocation;
 
     @NonNull
     @ColumnInfo(name = "textColorId")
     private int textColorId;
 
+    @NonNull
+    @ColumnInfo(name = "rawDateString")
+    private String rawDateString;
+
     public ExpiredEvents(@NonNull final String eventTitle, final long millisLeft, @NonNull final String imageUrl,
             final boolean imageLoadedFromUserPhone, final boolean imageLoadedFromUrl, final int imageId,
-            final int textColorId, final long millisRecordedAtExpiry) {
+            final int textColorId, final long millisRecordedAtExpiry, @NonNull String rawDateString) {
         this.eventTitle = eventTitle;
         this.millisLeft = millisLeft;
         this.imageUrl = imageUrl;
@@ -58,6 +69,34 @@ public class ExpiredEvents {
         this.imageId = imageId;
         this.textColorId = textColorId;
         this.millisRecordedAtExpiry = millisRecordedAtExpiry;
+        this.rawDateString = rawDateString;
+        this.setEventLocation("");
+    }
+
+    @NonNull
+    public String getRawDateString() {
+        return rawDateString;
+    }
+
+    public void setRawDateString(@NonNull final String rawDateString) {
+        this.rawDateString = rawDateString;
+    }
+
+    public boolean isLocationSet() {
+        return isLocationSet;
+    }
+
+    public void setLocationSet(final boolean locationSet) {
+        isLocationSet = locationSet;
+    }
+
+    @NonNull
+    public String getEventLocation() {
+        return eventLocation;
+    }
+
+    public void setEventLocation(@NonNull final String eventLocation) {
+        this.eventLocation = eventLocation;
     }
 
     public long getMillisRecordedAtExpiry() {

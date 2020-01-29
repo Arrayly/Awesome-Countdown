@@ -58,6 +58,12 @@ public class ExpiredEventsAdapter extends ListAdapter<ExpiredEvents, ViewHolder2
         ExpiredEvents expiredEvents = getItem(position);
         holder.cardRootBackground.setImageDrawable(null);
 
+        if (expiredEvents.isLocationSet() && !expiredEvents.getEventLocation().isEmpty()) {
+            holder.eventLocation.setVisibility(View.VISIBLE);
+            holder.eventLocation.setText(expiredEvents.getEventLocation());
+            holder.eventLocation.setTextColor(expiredEvents.getTextColorId());
+        }
+
         if (expiredEvents.isImageLoadedFromUserPhone() && AppHelperClass.checkIfUserBitmapImageExists(mContext)) {
             Bitmap bitmap = AppHelperClass.getUserBitmapImage(mContext);
             holder.cardRootBackground.setImageBitmap(bitmap);
@@ -69,6 +75,9 @@ public class ExpiredEventsAdapter extends ListAdapter<ExpiredEvents, ViewHolder2
         }
 
         holder.timeSinceExpiry.setText(timeSinceExpiry(expiredEvents.getMillisRecordedAtExpiry()));
+        holder.eventExpiryTime.setText(expiredEvents.getRawDateString());
+        holder.eventExpiryTime.setTextColor(expiredEvents.getTextColorId());
+
         holder.title.setText(expiredEvents.getEventTitle());
         holder.title.setTextColor(expiredEvents.getTextColorId());
 
@@ -77,7 +86,7 @@ public class ExpiredEventsAdapter extends ListAdapter<ExpiredEvents, ViewHolder2
 
     class ViewHolder2 extends RecyclerView.ViewHolder {
 
-        private TextView title, timeSinceExpiry;
+        private TextView title, timeSinceExpiry, eventExpiryTime, eventLocation;
 
         private ImageView cardRootBackground, cardFrontFade;
 
@@ -87,6 +96,8 @@ public class ExpiredEventsAdapter extends ListAdapter<ExpiredEvents, ViewHolder2
             title = itemView.findViewById(R.id.expired_event_rv_title_txv);
             timeSinceExpiry = itemView.findViewById(R.id.expired_event_rv_timeSinceExpiry_txv);
             cardRootBackground = itemView.findViewById(R.id.expired_event_imageView);
+            eventExpiryTime = itemView.findViewById(R.id.expired_event_end_date);
+            eventLocation = itemView.findViewById(R.id.expired_event_location);
 
             itemView.setOnClickListener(new OnClickListener() {
                 @Override

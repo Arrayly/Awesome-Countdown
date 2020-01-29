@@ -15,6 +15,7 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import project.awesomecountdown.ExpiredEventsAdapter.ExpiredEventClickListener;
 import project.awesomecountdown.databinding.FragmentArchiveBinding;
@@ -79,6 +80,7 @@ public class ArchiveFragment extends ModelFragment implements MyConstants {
                 if (expiredEvents != null) {
                     mExpiredEvents.clear();
                     mExpiredEvents.addAll(expiredEvents);
+                    Collections.reverse(expiredEvents);
                     mAdapter.submitList(expiredEvents);
                     mAdapter.notifyDataSetChanged();
                 }

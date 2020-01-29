@@ -147,8 +147,6 @@ public class HomeFragment extends ModelFragment
             public void onClick(int position) {
                 chosenEventPosition = position;
                 chosenEventId = sortedEventList.get(position).getID();
-                Toast.makeText(getActivity(), "ID: " + chosenEventId, Toast.LENGTH_SHORT)
-                        .show();
                 showBottomSheetDialog();
 
             }
@@ -222,7 +220,11 @@ public class HomeFragment extends ModelFragment
 
                 ExpiredEvents expiredEvents = new ExpiredEvents(ev.getEventTitle(), ev.getMillisLeft(),
                         ev.getImgUrl(), ev.isImageLoadedFromUserPhone(), ev.isImageLoadedFromUrl(), ev.getImageId(),
-                        ev.getTextColorId(), millisAtExpiry);
+                        ev.getTextColorId(), millisAtExpiry,ev.getDateRawString());
+                if (ev.isLocationSet() && !ev.getEventLocation().isEmpty()){
+                    expiredEvents.setLocationSet(true);
+                    expiredEvents.setEventLocation(ev.getEventLocation());
+                }
 
                 mEventViewModel.addExpiredEvent(expiredEvents);
                 ev_iter.remove();
@@ -298,6 +300,14 @@ public class HomeFragment extends ModelFragment
         super.onResume();
         ifEmptyRecyclerViewLoadAnimation();
         updateDatabase();
+        checkIfEventsExpiredNotifyUser();
+    }
+
+    private void checkIfEventsExpiredNotifyUser() {
+        if (deletedEventIDs.size() > 0){
+            mTransactionViewModel.numberOfExpiredEventsSinceLastVisit.setValue(deletedEventIDs.size());
+            deletedEventIDs.clear();
+        }
     }
 
     @Override

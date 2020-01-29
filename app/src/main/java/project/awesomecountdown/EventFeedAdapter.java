@@ -45,8 +45,8 @@ public class EventFeedAdapter extends RecyclerView.Adapter<EventFeedAdapter.View
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder holder, final int position) {
 
-        Drawable calendarIcon = mContext.getResources().getDrawable(R.drawable.calendar, null);
-        Drawable locationIcon = mContext.getResources().getDrawable(R.drawable.location, null);
+        Drawable calendarIcon = mContext.getResources().getDrawable(R.drawable.ic_timer_black_24dp, null);
+        Drawable locationIcon = mContext.getResources().getDrawable(R.drawable.location_icon, null);
 
         String title = mEventFeedDetails.get(position).getEventName();
         String localDate = mEventFeedDetails.get(position).getEventLocalDate();
@@ -59,7 +59,7 @@ public class EventFeedAdapter extends RecyclerView.Adapter<EventFeedAdapter.View
         if (localDate != null) {
             displayDate = localDate;
             if (eventLocalTime != null) {
-                displayDate = localDate + " · " + eventLocalTime + " GMT";
+                displayDate = localDate + " · " + eventLocalTime;
             }
         }
 

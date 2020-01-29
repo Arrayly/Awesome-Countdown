@@ -91,6 +91,11 @@ public class EventAdapter extends ListAdapter<Event, ViewHolder> {
             holder.cardBackgroundImgView.setBackgroundResource(event.getImageId());
         }
 
+        if(event.isLocationSet()){
+            holder.location.setVisibility(View.VISIBLE);
+            holder.location.setText(event.getEventLocation());
+        }
+
         int textColor = event.getTextColorId();
         holder.title.setText(event.getEventTitle());
         holder.endDate.setText(event.getDateRawString());
@@ -101,6 +106,7 @@ public class EventAdapter extends ListAdapter<Event, ViewHolder> {
 
         holder.title.setTextColor(textColor);
         holder.endDate.setTextColor(textColor);
+        holder.location.setTextColor(textColor);
 
         futureMillis = event.getMillisLeft();
         timeLeftInMillis = futureMillis - System.currentTimeMillis();
@@ -172,7 +178,7 @@ public class EventAdapter extends ListAdapter<Event, ViewHolder> {
 
         CountDownTimer mCountDownTimer;
 
-        private TextView title, endDate, time;
+        private TextView title, endDate, time, location;
 
         private ImageView reminderImgView, cardBackgroundImgView;
 
@@ -187,6 +193,7 @@ public class EventAdapter extends ListAdapter<Event, ViewHolder> {
             time = itemView.findViewById(R.id.rv_event_display_time);
             reminderImgView = itemView.findViewById(R.id.rv_event_reminderSet_imgView);
             cardBackgroundImgView = itemView.findViewById(R.id.rv_event_background_imgVIew);
+            location = itemView.findViewById(R.id.event_location);
             time.bringToFront();
 
             itemView.setOnClickListener(new OnClickListener() {

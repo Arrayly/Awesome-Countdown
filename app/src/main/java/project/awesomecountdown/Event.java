@@ -69,6 +69,9 @@ public class Event {
     @ColumnInfo(name = "imageLoadedFromUrl")
     private boolean imageLoadedFromUrl;
 
+    @NonNull
+    @ColumnInfo(name = "isLocationSet")
+    private boolean isLocationSet;
 
     public Event(@NonNull final long eventOrderId, @NonNull final long millisLeft,
             @NonNull final long millisAtTimeOfCreation,
@@ -86,6 +89,14 @@ public class Event {
         this.setEventUrl("");
         this.setEventLocation("");
         this.setImgUrl("");
+    }
+
+    public boolean isLocationSet() {
+        return isLocationSet;
+    }
+
+    public void setLocationSet(final boolean locationSet) {
+        isLocationSet = locationSet;
     }
 
     public boolean isImageLoadedFromUrl() {

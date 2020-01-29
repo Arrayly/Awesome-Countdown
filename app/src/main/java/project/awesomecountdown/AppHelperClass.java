@@ -12,6 +12,7 @@ import android.util.Log;
 import android.widget.Toast;
 import androidx.core.content.ContextCompat;
 import java.io.ByteArrayOutputStream;
+import java.util.Calendar;
 
 public class AppHelperClass implements MyConstants {
 
@@ -111,5 +112,33 @@ public class AppHelperClass implements MyConstants {
 
     public static int getFabWidth(Context context) {
         return (int) context.getResources().getDimension(R.dimen.fab_size);
+    }
+
+    //Returns a time stamp with AM/PM tag and other adjustments
+    public static String getHourlieTimeStamp(long millis){
+        String timeStamp = "";
+        Calendar c = Calendar.getInstance();
+        c.setTimeInMillis(millis);
+
+        int hour = c.get(Calendar.HOUR_OF_DAY);
+        int minute = c.get(Calendar.MINUTE);
+
+        if (minute < 10){
+            timeStamp = hour + ":" + "0"+minute;
+        }else {
+            timeStamp = hour + ":" +minute;
+        }
+
+
+        if (c.get(Calendar.AM_PM) == Calendar.PM){
+            timeStamp += " " + "PM";
+        }else {
+            timeStamp += " " + "AM";
+        }
+
+        return timeStamp;
+
+
+
     }
 }

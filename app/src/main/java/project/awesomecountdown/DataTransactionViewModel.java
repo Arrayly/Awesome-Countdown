@@ -23,6 +23,8 @@ public class DataTransactionViewModel extends AndroidViewModel {
 
     public MutableLiveData<Integer> viewPagerPosition = new MutableLiveData<>();
 
+    public MutableLiveData<Integer> numberOfExpiredEventsSinceLastVisit = new MutableLiveData<>();
+
     public DataTransactionViewModel(@NonNull final Application application) {
         super(application);
     }

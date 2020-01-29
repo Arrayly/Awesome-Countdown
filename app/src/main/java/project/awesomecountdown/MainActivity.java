@@ -35,6 +35,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayout.OnTabSelectedListener;
 import com.google.android.material.tabs.TabLayout.Tab;
+import project.awesomecountdown.AddEditActivity.ClickHandler;
 import project.awesomecountdown.databinding.ActivityMainBinding;
 
 public class MainActivity extends ModelActivity implements MyConstants {
@@ -145,6 +146,8 @@ public class MainActivity extends ModelActivity implements MyConstants {
             });
         }
 
+        //Make collapsing toolbar constricted on first run
+        mMainBinding.mainAcitivtyAppbar.setExpanded(false);
     }
 
     private void setUpTabIcons() {
@@ -159,25 +162,6 @@ public class MainActivity extends ModelActivity implements MyConstants {
         super.onBindViewModel();
         mTransactionViewModel = ViewModelProviders.of(this).get(DataTransactionViewModel.class);
 
-        mTransactionViewModel.showUndoSnackBar.observe(this, new Observer<Boolean>() {
-            @Override
-            public void onChanged(final Boolean aBoolean) {
-                if (aBoolean) {
-
-                    Snackbar snackbar = Snackbar
-                            .make(mMainBinding.eventCoordinatorLayout, "Undo Delete", Snackbar.LENGTH_LONG)
-                            .setAction("UNDO", new OnClickListener() {
-                                @Override
-                                public void onClick(final View v) {
-                                    mTransactionViewModel.setUndoEventDelete(true);
-                                }
-                            })
-                            .setActionTextColor(getResources().getColor(R.color.colorAccent));
-                    snackbar.show();
-                }
-
-            }
-        });
     }
 
     @Override
@@ -207,9 +191,14 @@ public class MainActivity extends ModelActivity implements MyConstants {
                 public void onPageSelected(final int position) {
                     viewPagerPosition = position;
                     mTransactionViewModel.viewPagerPosition.setValue(position);
-                    if (position == 1){
+                    if (position == 1) {
+                        feedFragmentInFocus = true;
+                        invalidateOptionsMenu();
+                    } else {
+                        feedFragmentInFocus = false;
                         invalidateOptionsMenu();
                     }
+
 
                 }
 
@@ -219,6 +208,47 @@ public class MainActivity extends ModelActivity implements MyConstants {
                 }
             });
         }
+
+        mTransactionViewModel.showUndoSnackBar.observe(this, new Observer<Boolean>() {
+            @Override
+            public void onChanged(final Boolean aBoolean) {
+                if (aBoolean) {
+
+                    Snackbar snackbar = Snackbar
+                            .make(mMainBinding.eventCoordinatorLayout, "Undo Delete", Snackbar.LENGTH_LONG)
+                            .setAction("UNDO", new OnClickListener() {
+                                @Override
+                                public void onClick(final View v) {
+                                    mTransactionViewModel.setUndoEventDelete(true);
+                                }
+                            })
+                            .setActionTextColor(getResources().getColor(R.color.colorAccent));
+                    snackbar.show();
+                }
+
+            }
+        });
+
+        mTransactionViewModel.numberOfExpiredEventsSinceLastVisit.observe(this, new Observer<Integer>() {
+            @Override
+            public void onChanged(final Integer integer) {
+                if (integer > 0) {
+                    Snackbar snackbar = Snackbar
+                            .make(mMainBinding.eventCoordinatorLayout, "You have " + integer + " expired events",
+                                    Snackbar.LENGTH_LONG)
+                            .setAction("View", new OnClickListener() {
+                                @Override
+                                public void onClick(final View v) {
+                                    int currentTab = mViewPager.getCurrentItem();
+                                    if (currentTab != 2) {
+                                        mViewPager.setCurrentItem(2, true);
+                                    }
+                                }
+                            }).setActionTextColor(getResources().getColor(R.color.colorAccent));
+                    snackbar.show();
+                }
+            }
+        });
     }
 
 
@@ -270,9 +300,9 @@ public class MainActivity extends ModelActivity implements MyConstants {
 
         MenuItem item = menu.findItem(R.id.action_search);
 
-        if (feedFragmentInFocus){
+        if (feedFragmentInFocus) {
             item.setVisible(true);
-        }else {
+        } else {
             item.setVisible(false);
         }
 
@@ -289,7 +319,7 @@ public class MainActivity extends ModelActivity implements MyConstants {
             if (requestCode == REQUEST_NEW_EVENT) {
                 Toast.makeText(this, "Event successfully created!", Toast.LENGTH_SHORT).show();
             } else if (requestCode == REQUEST_EDIT_EVENT) {
-                Toast.makeText(this, "Event successfuly updated!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Event successfully updated!", Toast.LENGTH_SHORT).show();
             }
         }
     }

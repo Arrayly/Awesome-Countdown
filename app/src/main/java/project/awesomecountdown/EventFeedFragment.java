@@ -134,7 +134,7 @@ public class EventFeedFragment extends ModelFragment
                     String rawTimeFormat = mEventFeedDetails.get(adapterPositionOfItemSelected).getEventLocalTime()
                             .trim();
 
-                    String rawDateString = rawDateFormat + " · " + rawTimeFormat + " GMT";
+                    String rawDateString = rawDateFormat + " · " + rawTimeFormat;
 
                     long futureMillis = getTimeStamp(rawTimeFormat, rawDateFormat);
 
@@ -158,6 +158,7 @@ public class EventFeedFragment extends ModelFragment
                         event.setEventLocation(eventLocation);
                         event.setImgUrl(imageUrl);
                         event.setImageLoadedFromUrl(true);
+                        event.setLocationSet(true);
 
                         mEventViewModel.addEvent(event);
 
@@ -307,7 +308,7 @@ public class EventFeedFragment extends ModelFragment
 
             @Override
             public void onFailure(final Call<Ticket> call, final Throwable t) {
-                Toast.makeText(getActivity(), "An ERROR HAS OCCURED!" + t.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity(), "Oops! An error has occurred" + t.getMessage(), Toast.LENGTH_LONG).show();
 
             }
         });

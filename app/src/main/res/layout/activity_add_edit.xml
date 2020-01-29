@@ -10,14 +10,17 @@
             type="project.awesomecountdown.AddEditActivity.ClickHandler" />
     </data>
 
+
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/add_edit_cardView_toolbar"
             android:layout_width="match_parent"
-            android:layout_height="40dp"
+            android:layout_height="?attr/actionBarSize"
             app:cardElevation="8dp">
 
             <RelativeLayout
@@ -29,36 +32,33 @@
                     android:layout_width="32dp"
                     android:layout_height="32dp"
                     android:layout_alignParentStart="true"
-                    android:layout_marginLeft="5dp"
-                    android:src="@drawable/back_icon"
                     android:layout_centerVertical="true"
+                    android:layout_marginStart="5dp"
+                    android:layout_marginLeft="5dp"
                     android:onClick="@{clickListener::exitAddEditIconClicked}"
-                    android:layout_marginStart="5dp">
-                </ImageView>
+                    android:src="@drawable/back_icon"></ImageView>
 
                 <TextView
                     android:id="@+id/add_edit_toolbar_txtview"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
-                    android:textStyle="bold"
                     android:layout_marginStart="75dp"
-                    android:text="Add countdown">
-                </TextView>
+                    android:text="Add countdown"
+                    android:textStyle="bold"></TextView>
 
                 <ImageView
                     android:id="@+id/add_edit_delete_event_icon"
                     android:layout_width="16dp"
                     android:layout_height="24dp"
-                    android:visibility="invisible"
-                    android:onClick="@{clickListener::deleteEventIconClicked}"
                     android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
                     android:layout_marginRight="5dp"
+                    android:onClick="@{clickListener::deleteEventIconClicked}"
                     android:src="@drawable/delete_icon"
-                    android:layout_centerVertical="true"></ImageView>
+                    android:visibility="invisible"></ImageView>
 
             </RelativeLayout>
-
 
 
         </com.google.android.material.card.MaterialCardView>
@@ -67,10 +67,10 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_below="@+id/add_edit_cardView_toolbar"
             android:background="@android:color/background_light"
             android:orientation="vertical"
             android:padding="10dp"
-            android:layout_marginTop="40dp"
             tools:context=".AddEditEvent">
 
             <com.google.android.material.textfield.TextInputLayout
@@ -78,8 +78,8 @@
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="330dp"
                 android:layout_height="wrap_content"
-                android:hint="@string/date"
                 android:layout_gravity="center"
+                android:hint="@string/date"
                 android:textColorHint="@color/colorPrimary"
                 app:boxStrokeColor="@color/colorAccent"
                 app:hintAnimationEnabled="true">
@@ -87,8 +87,8 @@
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/input_date_etext"
                     android:layout_width="match_parent"
-                    android:elevation="4dp"
                     android:layout_height="wrap_content"
+                    android:elevation="4dp"
                     android:textSize="15sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -99,9 +99,9 @@
                 android:layout_width="330dp"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/input_date_layout"
-                android:layout_marginTop="20dp"
-                android:hint="@string/time"
                 android:layout_gravity="center"
+                android:layout_marginTop="15dp"
+                android:hint="@string/time"
                 android:textColorHint="@color/colorPrimary"
                 app:boxStrokeColor="@color/colorAccent"
                 app:hintAnimationEnabled="true">
@@ -109,8 +109,8 @@
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/input_time_etext"
                     android:layout_width="match_parent"
-                    android:elevation="4dp"
                     android:layout_height="wrap_content"
+                    android:elevation="4dp"
                     android:textSize="15sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -118,10 +118,10 @@
                 android:id="@+id/input_name_layout"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="330dp"
-                android:layout_gravity="center"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/input_time_layout"
-                android:layout_marginTop="20dp"
+                android:layout_gravity="center"
+                android:layout_marginTop="15dp"
                 android:hint="@string/event_name"
                 android:textColorHint="@color/colorPrimary"
                 app:boxStrokeColor="@color/colorAccent"
@@ -133,11 +133,10 @@
                     android:id="@+id/input_name_etext"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:maxLength="20"
                     android:elevation="4dp"
+                    android:maxLength="20"
                     android:textSize="15sp" />
             </com.google.android.material.textfield.TextInputLayout>
-
 
 
             <androidx.cardview.widget.CardView
@@ -146,10 +145,10 @@
                 android:layout_gravity="center"
                 android:layout_marginTop="15dp"
                 android:onClick="@{clickListener::addImageClicked}"
-                app:cardUseCompatPadding="true"
-                app:cardPreventCornerOverlap="true"
                 app:cardCornerRadius="10dp"
-                app:cardElevation="4dp">
+                app:cardElevation="4dp"
+                app:cardPreventCornerOverlap="true"
+                app:cardUseCompatPadding="true">
 
                 <RelativeLayout
                     android:layout_width="match_parent"
@@ -159,15 +158,43 @@
                         android:id="@+id/addEdit_customImage"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
+                        android:src="@drawable/add_edit_pic_0"
                         android:scaleType="centerCrop" />
 
                     <TextView
                         android:id="@+id/chosen_color_TextView"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_centerInParent="true"
-                        android:text="@string/text_color"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginStart="20dp"
+                        android:text="Your Title"
                         android:textSize="30dp"
+                        android:textStyle="italic" />
+
+                    <TextView
+                        android:id="@+id/chosen_time_textView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:layout_below="@+id/chosen_color_TextView"
+                        android:drawableLeft="@drawable/ic_timer_black_24dp"
+                        android:layout_marginStart="20dp"
+                        android:visibility="visible"
+                        android:text="Date"
+                        android:textSize="15sp"
+                        android:textStyle="italic" />
+
+                    <TextView
+                        android:id="@+id/chosen_location_textView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:visibility="invisible"
+                        android:layout_below="@+id/chosen_time_textView"
+                        android:drawableLeft="@drawable/location_icon"
+                        android:layout_marginStart="20dp"
+                        android:text="Location"
+                        android:textSize="15sp"
                         android:textStyle="italic" />
 
                     <ImageView
@@ -175,7 +202,7 @@
                         android:layout_height="32dp"
                         android:layout_alignParentEnd="true"
                         android:layout_marginTop="10dp"
-                        android:layout_marginRight="30dp"
+                        android:layout_marginRight="20dp"
                         android:src="@drawable/add_new_image" />
 
                 </RelativeLayout>
@@ -193,16 +220,16 @@
                     android:layout_height="28dp"
                     android:layout_gravity="center"
                     android:layout_marginStart="10dp"
-                    android:onClick="@{clickListener::expandIconClicked}"
-                    android:background="@drawable/plus"></ImageView>
+                    android:background="@drawable/plus"
+                    android:onClick="@{clickListener::expandIconClicked}"></ImageView>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:textStyle="bold"
                     android:layout_marginLeft="10dp"
-                    android:text="Additional Settings">
+                    android:text="Additional Settings"
+                    android:textStyle="bold">
 
                 </TextView>
 
@@ -217,61 +244,79 @@
                 app:ael_orientation="vertical">
 
 
-
                 <com.google.android.material.chip.Chip
                     android:id="@+id/color_btn"
+                    android:layout_width="125dp"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="10dp"
                     android:elevation="4dp"
                     android:onClick="@{clickListener::pickColorButton}"
                     android:text="Text Color"
-                    app:rippleColor="@color/white"
-                    android:layout_alignParentStart="true"
-                    app:chipBackgroundColor="@color/app_theme_buttons"
-                    android:layout_marginTop="10dp"
-                    android:layout_width="125dp"
-                    android:layout_marginStart="10dp"
-                    android:textColor="@color/white"
                     android:textAlignment="center"
-                    android:layout_height="wrap_content"
-                    android:theme="@style/Theme.MaterialComponents.Light">
-                </com.google.android.material.chip.Chip>
+                    android:textColor="@color/white"
+                    android:theme="@style/Theme.MaterialComponents.Light"
+                    app:chipBackgroundColor="@color/app_theme_buttons"
+                    app:rippleColor="@color/white"></com.google.android.material.chip.Chip>
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/background_btn"
                     android:layout_width="125dp"
-                    android:textColor="@color/white"
-                    android:elevation="4dp"
-                    app:rippleColor="@color/white"
-                    app:chipBackgroundColor="@color/app_theme_buttons"
                     android:layout_height="wrap_content"
                     android:layout_alignBaseline="@id/color_btn"
                     android:layout_marginStart="140dp"
-                    android:textAlignment="center"
-                    android:theme="@style/Theme.MaterialComponents.Light"
+                    android:elevation="4dp"
                     android:onClick="@{clickListener::randomBackground}"
-                    android:text="Background " />
+                    android:text="Background "
+                    android:textAlignment="center"
+                    android:textColor="@color/white"
+                    android:theme="@style/Theme.MaterialComponents.Light"
+                    app:chipBackgroundColor="@color/app_theme_buttons"
+                    app:rippleColor="@color/white" />
 
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/alert_switch"
                     android:layout_width="125dp"
-                    app:checkedIconEnabled="true"
-                    android:checkable="true"
-                    app:chipIconEnabled="true"
-                    android:textAlignment="center"
-                    android:layout_marginTop="5dp"
-                    android:layout_marginStart="10dp"
-                    android:layout_below="@id/background_btn"
-                    android:textColor="@color/white"
-                    app:rippleColor="@color/white"
-                    android:elevation="4dp"
                     android:layout_height="wrap_content"
-                    android:text="Set Alert"
+                    android:layout_below="@id/background_btn"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="10dp"
+                    android:checkable="true"
+                    android:elevation="4dp"
                     android:onClick="@{clickListener::setAlertClicked}"
+                    android:text="Set Alert"
+                    android:textAlignment="center"
+                    android:textColor="@color/white"
                     android:theme="@style/Theme.MaterialComponents.Light"
+                    app:checkedIconEnabled="true"
                     app:chipBackgroundColor="@color/app_theme_buttons"
-                    android:layout_marginBottom="10dp">
-                </com.google.android.material.chip.Chip>
+                    app:chipIconEnabled="true"
+                    app:rippleColor="@color/white"></com.google.android.material.chip.Chip>
 
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/location_chip"
+                    android:layout_width="125dp"
+                    android:layout_below="@id/background_btn"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="140dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="10dp"
+                    android:checkable="true"
+                    android:elevation="4dp"
+                    android:text="Location"
+                    android:textAlignment="center"
+                    android:textColor="@color/white"
+                    android:theme="@style/Theme.MaterialComponents.Light"
+                    app:checkedIconEnabled="true"
+                    app:chipBackgroundColor="@color/app_theme_buttons"
+                    app:chipIconEnabled="true"
+                    app:checkedIcon="@drawable/location_icon"
+                    android:onClick="@{clickListener::setLocationChipClicked}"
+                    app:rippleColor="@color/white">
+                </com.google.android.material.chip.Chip>
 
 
             </com.github.aakira.expandablelayout.ExpandableRelativeLayout>
@@ -280,31 +325,29 @@
             <FrameLayout
                 android:id="@+id/add_edit_createCountdown_btn"
                 android:layout_width="250dp"
-                android:layout_marginTop="30dp"
-                android:layout_gravity="center"
                 android:layout_height="56dp"
-                android:elevation="4dp"
+                android:layout_gravity="center"
+                android:layout_marginTop="30dp"
+                android:background="@drawable/create_countdown_btn"
                 android:clickable="true"
-                android:onClick="@{clickListener::createCountdownClicked}"
-                android:background="@drawable/create_countdown_btn">
+                android:elevation="4dp"
+                android:onClick="@{clickListener::createCountdownClicked}">
 
 
                 <TextView
                     android:id="@+id/add_edit_btn_textView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Create"
                     android:layout_gravity="center"
-                    android:textColor="@color/white">
-                </TextView>
+                    android:text="Create"
+                    android:textColor="@color/white"></TextView>
 
                 <ProgressBar
                     android:id="@+id/addEdit_progressBar"
                     android:layout_width="36dp"
                     android:layout_height="36dp"
                     android:layout_gravity="center"
-                    android:visibility="invisible">
-                </ProgressBar>
+                    android:visibility="invisible"></ProgressBar>
 
             </FrameLayout>
 
@@ -314,17 +357,17 @@
         <View
             android:id="@+id/root_layout"
             android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:background="@color/app_theme_primary"
-            android:visibility="invisible"
-            android:layout_height="match_parent" />
+            android:visibility="invisible" />
 
         <View
             android:id="@+id/root_layout2"
             android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:background="@color/app_theme_buttons"
-            android:visibility="invisible"
-            android:layout_height="match_parent" />
-<!--        Remember to set visibility to visible for root_laayout 2 only!-->
+            android:visibility="invisible" />
+        <!--        Remember to set visibility to visible for root_laayout 2 only!-->
 
     </RelativeLayout>
 

@@ -6,12 +6,17 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.TimeInterpolator;
 import android.animation.ValueAnimator;
 import android.animation.ValueAnimator.AnimatorUpdateListener;
+import android.annotation.SuppressLint;
 import android.app.AlarmManager;
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
+import android.content.DialogInterface.OnClickListener;
+import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BlendMode;
@@ -46,11 +51,13 @@ import android.view.animation.RotateAnimation;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.TimePicker;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import android.os.Bundle;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog.Builder;
 import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.databinding.adapters.ViewGroupBindingAdapter.OnAnimationEnd;
@@ -65,6 +72,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import project.awesomecountdown.MainActivity.ClickHandler;
 import project.awesomecountdown.databinding.ActivityAddEditBinding;
 import yuku.ambilwarna.AmbilWarnaDialog;
 import yuku.ambilwarna.AmbilWarnaDialog.OnAmbilWarnaListener;
@@ -86,12 +94,13 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
 
     private long futureTime, millisAtTimeOfCreation;
 
-    private String chosenTitle, imageUrl;
+    private String chosenTitle, imageUrl, eventLocation;
 
     private List<Event> mEventList = new ArrayList<>();
 
     private boolean isEventEditing, isAlertSetInActivity, isAlertSetInDatabase, isExpiredEventBeingUpdated,
-            savedInstanceIsNull, imageLoadedFromUserPhone, imageLoadedFromUrl;
+            savedInstanceIsNull, imageLoadedFromUserPhone, imageLoadedFromUrl, isLocationSet, isMenuExpanded,
+            timeSetInActivity, dateSetInActivity, activityRecievedIntent;
 
     private long eventEditId, eventOrderId, notificationId, eventExpiredId;
 
@@ -117,11 +126,13 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
                     @Override
                     public void onDateSet(DatePicker view, int year,
                             int monthOfYear, int dayOfMonth) {
+                        dateSetInActivity = true;
 
                         mYear = year;
                         mMonth = monthOfYear;
                         mDay = dayOfMonth;
 
+                        setExpiryDateForTextView();
                         updateDateUI();
 
                     }
@@ -144,11 +155,13 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
                     @Override
                     public void onTimeSet(TimePicker view, int hourOfDay,
                             int minute) {
+                        timeSetInActivity = true;
 
                         mHour = hourOfDay;
                         mMinute = minute;
 
                         updateTimeUI();
+                        setExpiryDateForTextView();
                     }
                 }, hr, min, false);
         timePickerDialog.show();
@@ -191,10 +204,12 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
             rootLayout.setVisibility(View.GONE);
         }
 
-        //Set random image in our cardView
-
         getWindow().setNavigationBarColor(getResources().getColor(R.color.app_theme_primary));
         getWindow().setStatusBarColor(getResources().getColor(R.color.app_theme_sub));
+
+        //Set today's time for textView on first start-up
+        setExpiryDateForTextView();
+
 
     }
 
@@ -253,10 +268,14 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
             @Override
             public void onTextChanged(final CharSequence s, final int start, final int before, final int count) {
                 charInput = s;
+                mBinding.chosenColorTextView.setText(s);
             }
 
             @Override
             public void afterTextChanged(final Editable s) {
+                if (mBinding.chosenColorTextView.getText().toString().isEmpty()) {
+                    mBinding.chosenColorTextView.setText("Your Title");
+                }
 
             }
         });
@@ -266,12 +285,27 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
             public void onCheckedChanged(final CompoundButton buttonView, final boolean isChecked) {
                 isAlertSetInActivity = isChecked;
                 if (isChecked) {
-                    Toast.makeText(AddEditActivity.this, "Alert set Succesfully!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(AddEditActivity.this, "Alert Set Successfully!", Toast.LENGTH_SHORT).show();
                     mBinding.alertSwitch.setChipBackgroundColorResource(R.color.tab_expired);
+
                 } else {
                     mBinding.alertSwitch.setChipBackgroundColorResource(R.color.app_theme_buttons);
                 }
 
+            }
+        });
+
+        mBinding.locationChip.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(final CompoundButton buttonView, final boolean isChecked) {
+                if (isChecked && !isLocationSet) {
+                    mBinding.locationChip.setChipBackgroundColorResource(R.color.tab_expired);
+                    showLocationDialog();
+                } else if (!isChecked) {
+                    isLocationSet = false;
+                    mBinding.chosenLocationTextView.setVisibility(View.INVISIBLE);
+                    mBinding.locationChip.setChipBackgroundColorResource(R.color.app_theme_buttons);
+                }
             }
         });
 
@@ -298,8 +332,8 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
             }
         });
 
-
     }
+
 
     //Here we are retrieving the list of data from DB
     private void processDbResult(final List<ExpiredEvents> expiredEvents, final List<Event> currentEvent) {
@@ -314,6 +348,8 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
                 eventExpiredId = expired.getID();
                 imageUrl = expired.getImageUrl();
                 chosenImageId = expired.getImageId();
+                isLocationSet = expired.isLocationSet();
+                eventLocation = expired.getEventLocation();
                 millis = expired.getMillisLeft();
             }
 
@@ -332,6 +368,8 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
                 isAlertSetInDatabase = event.isAlertSet();
                 notificationId = event.getNotificationId();
                 chosenImageId = event.getImageId();
+                isLocationSet = event.isLocationSet();
+                eventLocation = event.getEventLocation();
 
                 millis = event.getMillisLeft();
 
@@ -344,16 +382,13 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
         if (isAlertSetInDatabase) {
             isAlertSetInActivity = true;
             mBinding.alertSwitch.toggle();
-            mBinding.alertSwitch.setChipBackgroundColorResource(R.color.tab_expired);
         }
 
         if (imageUrl != null && !imageUrl.isEmpty()) {
             Picasso.get().load(imageUrl).into(mBinding.addEditCustomImage);
             imageLoadedFromUrl = true;
-        } else {
-
-            loadDefaultImage();
         }
+
     }
 
     private void setUpUi(long millis) {
@@ -366,6 +401,7 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
         mHour = c.get(Calendar.HOUR_OF_DAY);
         mMinute = c.get(Calendar.MINUTE);
 
+        setExpiryDateForTextView();
         updateDateUI();
         updateTimeUI();
         updateOtherUI();
@@ -379,6 +415,7 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
             long id = intent.getLongExtra(mConstants.CHOSEN_EVENT_ID, 0);
 
             if (id != 0) {
+                activityRecievedIntent = true;
                 isEventEditing = true;
                 getEventFromDb(id);
                 mBinding.addEditBtnTextView.setText("Update");
@@ -387,6 +424,7 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
         } else if (intent.hasExtra(CHOSEN_EXPIRED_EVENT_ID)) {
             long id = intent.getLongExtra(CHOSEN_EXPIRED_EVENT_ID, 0);
             if (id != 0) {
+                activityRecievedIntent = true;
                 getExpiredEventFromDb(id);
                 mBinding.addEditDeleteEventIcon.setVisibility(View.VISIBLE);
                 mBinding.addEditBtnTextView.setText("Update");
@@ -442,9 +480,7 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
 
 
     private boolean validationProcessor() {
-        Calendar c = Calendar.getInstance();
-        c.set(mYear, mMonth, mDay, mHour, mMinute, DEFAULT_VALUE);
-        long chosenMillis = c.getTimeInMillis();
+        long chosenMillis = getChosenMillis();
         long currentMillis = System.currentTimeMillis();
         long diff = chosenMillis - currentMillis;
         if (diff <= 0) {
@@ -469,6 +505,13 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
         }
 
         return true;
+    }
+
+    //Returns the milliseconds for the selected date and time
+    private long getChosenMillis() {
+        Calendar c = Calendar.getInstance();
+        c.set(mYear, mMonth, mDay, mHour, mMinute, DEFAULT_VALUE);
+        return c.getTimeInMillis();
     }
 
     private void updateEventDb() {
@@ -573,6 +616,10 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
 
         outState.putCharSequence("charInput", charInput);
 
+        outState.putString("chosenTitle", chosenTitle);
+        outState.putString("imageUrl", imageUrl);
+        outState.putString("eventLocation", eventLocation);
+
         outState.putLong("eventEditId", eventEditId);
         outState.putLong("eventOrderId", eventOrderId);
         outState.putLong("notificationId", notificationId);
@@ -586,6 +633,11 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
         outState.putBoolean("isExpiredEventBeingUpdated", isExpiredEventBeingUpdated);
         outState.putBoolean("imageLoadedFromUserPhone", imageLoadedFromUserPhone);
         outState.putBoolean("imageLoadedFromUrl", imageLoadedFromUrl);
+        outState.putBoolean("isLocationSet", isLocationSet);
+        outState.putBoolean("isMenuExpanded", isMenuExpanded);
+        outState.putBoolean("timeSetInActivity", timeSetInActivity);
+        outState.putBoolean("dateSetInActivity", dateSetInActivity);
+        outState.putBoolean("activityRecievedIntent", activityRecievedIntent);
     }
 
     private void loadDestroyedData(final Bundle savedInstanceState) {
@@ -600,6 +652,10 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
 
         charInput = savedInstanceState.getCharSequence("charInput", charInput);
 
+        chosenTitle = savedInstanceState.getString("chosenTitle", chosenTitle);
+        imageUrl = savedInstanceState.getString("imageUrl", imageUrl);
+        eventLocation = savedInstanceState.getString("eventLocation", eventLocation);
+
         eventEditId = savedInstanceState.getLong("eventEditId", mConstants.DEFAULT_VALUE);
         eventOrderId = savedInstanceState.getLong("eventOrderId", mConstants.DEFAULT_VALUE);
         notificationId = savedInstanceState.getLong("notificationId", mConstants.DEFAULT_VALUE);
@@ -610,14 +666,19 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
         isEventEditing = savedInstanceState.getBoolean("isEventEditing", isEventEditing);
         isAlertSetInActivity = savedInstanceState.getBoolean("isAlertSetInActivity", isAlertSetInActivity);
         imageLoadedFromUrl = savedInstanceState.getBoolean("imageLoadedFromUrl", imageLoadedFromUrl);
+        isMenuExpanded = savedInstanceState.getBoolean("isMenuExpanded", isMenuExpanded);
+        dateSetInActivity = savedInstanceState.getBoolean("dateSetInActivity", dateSetInActivity);
+        timeSetInActivity = savedInstanceState.getBoolean("timeSetInActivity", timeSetInActivity);
+        activityRecievedIntent = savedInstanceState.getBoolean("activityRecievedIntent", activityRecievedIntent);
+
         imageLoadedFromUserPhone = savedInstanceState
                 .getBoolean("imageLoadedFromUserPhone", imageLoadedFromUserPhone);
         isAlertSetInDatabase = savedInstanceState.getBoolean("isAlertSetInDatabase", isAlertSetInDatabase);
         isExpiredEventBeingUpdated = savedInstanceState
                 .getBoolean("isExpiredEventBeingUpdated", isExpiredEventBeingUpdated);
+        isLocationSet = savedInstanceState.getBoolean("isLocationSet", isLocationSet);
 
-        updateDateUI();
-        updateTimeUI();
+        setExpiryDateForTextView();
         updateOtherUI();
 
     }
@@ -693,10 +754,12 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
 
             if (expanded == 1) {
                 mBinding.addEditExpandableLayout.toggle();
+                isMenuExpanded = true;
                 mBinding.expandingIcon.setBackgroundResource(R.drawable.minus);
 
             } else {
                 mBinding.addEditExpandableLayout.toggle();
+                isMenuExpanded = false;
                 mBinding.expandingIcon.setBackgroundResource(R.drawable.plus);
                 expanded = 0;
             }
@@ -714,7 +777,8 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
                         @Override
                         public void onOk(final AmbilWarnaDialog dialog, final int color) {
                             colorDefault = color;
-                            mBinding.chosenColorTextView.setTextColor(colorDefault);
+                            setColorToText();
+
                         }
                     });
 
@@ -727,18 +791,29 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
                     .playOn(mBinding.alertSwitch);
         }
 
-        public void deleteEventIconClicked(View view){
+        public void deleteEventIconClicked(View view) {
             mViewModel.deleteExpiredEventById(eventExpiredId);
             unRevealActivity();
         }
 
-        public void exitAddEditIconClicked(View view){
+        public void exitAddEditIconClicked(View view) {
             YoYo.with(Techniques.Pulse).duration(100)
                     .playOn(mBinding.addEditExitIcon);
             unRevealActivity();
         }
+
+        public void setLocationChipClicked(View view) {
+            YoYo.with(Techniques.Pulse).duration(100)
+                    .playOn(mBinding.locationChip);
+
+        }
     }
 
+    private void setColorToText() {
+        mBinding.chosenColorTextView.setTextColor(colorDefault);
+        mBinding.chosenLocationTextView.setTextColor(colorDefault);
+        mBinding.chosenTimeTextView.setTextColor(colorDefault);
+    }
 
 
     private void getImageFromUserPhone() {
@@ -749,28 +824,73 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
 
     }
 
+    @SuppressLint("SetTextI18n")
     private void updateDateUI() {
         mBinding.inputDateEtext.setText(mDay + "-" + (mMonth + 1) + "-" + mYear);
     }
 
+    @SuppressLint("SetTextI18n")
     private void updateTimeUI() {
-        mBinding.inputTimeEtext.setText(mHour + ":" + mMinute);
+        String timeStamp = AppHelperClass.getHourlieTimeStamp(getChosenMillis());
+        mBinding.inputTimeEtext.setText(timeStamp);
+    }
+
+    @SuppressLint("SetTextI18n")
+    private void setExpiryDateForTextView() {
+
+        if (!timeSetInActivity && !dateSetInActivity && !activityRecievedIntent) {
+            long currentMillis = System.currentTimeMillis();
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(currentMillis);
+
+            mYear = calendar.get(Calendar.YEAR);
+            mMonth = calendar.get(Calendar.MONTH);
+            mDay = calendar.get(Calendar.DAY_OF_MONTH);
+            mHour = calendar.get(Calendar.HOUR_OF_DAY);
+            mMinute = calendar.get(Calendar.MINUTE);
+
+            updateTimeUI();
+            updateDateUI();
+        }
+
+        String timeStamp = AppHelperClass.getHourlieTimeStamp(getChosenMillis());
+
+        mBinding.chosenTimeTextView
+                .setText(timeStamp);
     }
 
     private void updateOtherUI() {
+        mBinding.addEditCustomImage.setImageDrawable(null);
+        mBinding.addEditCustomImage.setBackground(null);
         mBinding.inputNameEtext.setText(charInput);
-        mBinding.chosenColorTextView.setTextColor(colorDefault);
+        setColorToText();
+
         Bitmap bitmap = AppHelperClass.getUserBitmapImage(AddEditActivity.this);
 
-        if (bitmap != null) {
+        if (bitmap != null && imageLoadedFromUserPhone) {
             mBinding.addEditCustomImage.setImageBitmap(bitmap);
         } else {
-            mBinding.addEditCustomImage.setBackgroundResource(chosenImageId);
+            if (chosenImageId != 0){
+                mBinding.addEditCustomImage.setBackgroundResource(chosenImageId);
+            }else{
+                mBinding.addEditCustomImage.setBackgroundResource(randomImageIdArray[0]);
+            }
+
         }
 
         if (isAlertSetInActivity) {
             mBinding.alertSwitch.toggle();
-            mBinding.alertSwitch.setChipBackgroundColorResource(R.color.tab_expired);
+        }
+
+        if (isLocationSet) {
+            mBinding.locationChip.toggle();
+            mBinding.locationChip.setChipBackgroundColorResource(R.color.tab_expired);
+            mBinding.chosenLocationTextView.setVisibility(View.VISIBLE);
+            mBinding.chosenLocationTextView.setText(eventLocation);
+        }
+
+        if (isMenuExpanded) {
+            mBinding.addEditExpandableLayout.toggle();
         }
     }
 
@@ -930,5 +1050,53 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
                     .playOn(mBinding.addEditProgressBar);
 
         }
+    }
+
+    private void showLocationDialog() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(AddEditActivity.this);
+        builder.setTitle("Enter Location");
+        final EditText editText = new EditText(AddEditActivity.this);
+        builder.setView(editText);
+        builder.setIcon(R.drawable.location_icon);
+        editText.setText(eventLocation);
+        builder.setPositiveButton("OK", new OnClickListener() {
+            @Override
+            public void onClick(final DialogInterface dialog, final int which) {
+
+                if (!editText.getText().toString().trim().equals("")) {
+                    eventLocation = editText.getText().toString().trim();
+                    Toast.makeText(mContext, "Location set Successfully!", Toast.LENGTH_SHORT).show();
+                    isLocationSet = true;
+                    mBinding.chosenLocationTextView.setVisibility(View.VISIBLE);
+                    mBinding.chosenLocationTextView.setText(eventLocation);
+                } else {
+                    Toast.makeText(mContext, "Please Enter a valid location", Toast.LENGTH_SHORT).show();
+                    mBinding.locationChip.toggle();
+                }
+                dialog.dismiss();
+            }
+        });
+
+        builder.setNegativeButton("Cancle", new OnClickListener() {
+            @Override
+            public void onClick(final DialogInterface dialog, final int which) {
+                dialog.dismiss();
+                mBinding.locationChip.toggle();
+                isLocationSet = false;
+
+            }
+        });
+
+        builder.setOnCancelListener(new OnCancelListener() {
+            @Override
+            public void onCancel(final DialogInterface dialog) {
+                mBinding.locationChip.toggle();
+                isLocationSet = false;
+            }
+        });
+
+        builder.show();
+
+
     }
 }

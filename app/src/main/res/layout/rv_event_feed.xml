@@ -44,7 +44,7 @@
                 android:layout_marginLeft="10dp"
                 android:layout_centerVertical="true"
                 android:layout_height="120dp"
-                app:civ_border_width="2dp"
+                app:civ_border_width="1dp"
                 app:civ_border_color="@color/app_theme_buttons">
 
             </de.hdodenhof.circleimageview.CircleImageView>

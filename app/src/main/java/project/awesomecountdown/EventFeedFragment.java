@@ -294,14 +294,12 @@ public class EventFeedFragment extends ModelFragment
 
                         mBinding.eventFeedRecycler.setAdapter(mFeedAdapter);
 
-                        Toast.makeText(getActivity(), "Success!", Toast.LENGTH_SHORT).show();
-
                         mBinding.swipeRefreshEventfeed.setRefreshing(false);
 
                     } catch (Exception e) {
                         e.printStackTrace();
                         mBinding.swipeRefreshEventfeed.setRefreshing(false);
-                        Toast.makeText(getActivity(), "An ERROR HAS OCCURED!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), "Oops! We could not find anything.", Toast.LENGTH_SHORT).show();
                     }
                 }
             }

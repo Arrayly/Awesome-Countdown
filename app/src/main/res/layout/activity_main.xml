@@ -13,41 +13,33 @@
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:id="@+id/event_coordinatorLayout"
         android:layout_width="match_parent"
+        android:background="@color/grey_10"
         android:layout_height="match_parent"
         tools:context=".MainActivity">
 
         <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/main_acitivty_appbar"
             android:layout_width="match_parent"
-            android:layout_height="200dp"
+            android:layout_height="wrap_content"
             android:fitsSystemWindows="true"
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
-            <com.google.android.material.appbar.CollapsingToolbarLayout
-                android:id="@+id/main_activity_collapsingToolbarLayout"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/purple_image_appbarlayout"
-                app:contentScrim="@color/app_theme_primary"
-                app:expandedTitleMarginEnd="64dp"
-                app:expandedTitleMarginStart="48dp"
-                app:layout_scrollFlags="scroll|exitUntilCollapsed"
-                app:title="Awesome Countdown">
-
-                <include
-                    android:id="@+id/customToolBar"
-                    layout="@layout/toolbar" />
-
-            </com.google.android.material.appbar.CollapsingToolbarLayout>
+            <include
+                android:id="@+id/customToolBar"
+                layout="@layout/toolbar" />
 
         </com.google.android.material.appbar.AppBarLayout>
 
         <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/white"
+            android:background="@color/grey_10"
             android:clipToPadding="false"
+            android:fadeScrollbars="true"
+            android:fadingEdge="vertical"
+            android:fadingEdgeLength="15dp"
             android:fillViewport="true"
+            android:requiresFadingEdge="vertical"
             app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
 
             <LinearLayout
@@ -56,21 +48,12 @@
                 android:background="@color/white"
                 android:orientation="vertical">
 
-                <com.google.android.material.card.MaterialCardView
+                <com.google.android.material.tabs.TabLayout
+                    android:id="@+id/tabs"
                     android:layout_width="match_parent"
-                    android:layout_marginTop="3dp"
                     android:layout_height="wrap_content"
-                    app:cardCornerRadius="8dp"
-                    app:cardElevation="8dp">
-
-                    <com.google.android.material.tabs.TabLayout
-                        android:id="@+id/tabs"
-                        app:tabRippleColor="@color/app_theme_buttons"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        app:tabIndicatorHeight="3dp" />
-
-                </com.google.android.material.card.MaterialCardView>
+                    app:tabIndicatorHeight="3dp"
+                    app:tabRippleColor="@color/pink_400" />
 
 
                 <androidx.viewpager.widget.ViewPager
@@ -91,14 +74,34 @@
             android:elevation="4dp"
             android:onClick="@{clickListener::fabClicked}"
             android:src="@drawable/ic_add_black_24dp"
-            app:backgroundTint="@color/app_theme_buttons" />
+            app:backgroundTint="@color/pink_400" />
 
-        <View
-            android:id="@+id/main_rootLayout"
+
+
+            <View
+                android:id="@+id/main_rootLayout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/pink_400"
+                android:visibility="gone" />
+
+
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@color/app_theme_buttons"
-            android:visibility="invisible"></View>
+            android:layout_height="10dp"
+            app:layout_anchor="@id/tabs"
+            app:layout_anchorGravity="bottom">
+
+            <View
+                android:id="@+id/drop_shadow_mainActivity"
+                android:layout_width="match_parent"
+                android:layout_height="5dp"
+                android:layout_alignParentBottom="true"
+                android:background="@drawable/drop_shadow" />
+        </RelativeLayout>
+
+
+
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>

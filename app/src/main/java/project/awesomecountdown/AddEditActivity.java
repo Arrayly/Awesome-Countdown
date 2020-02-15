@@ -57,7 +57,9 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import android.os.Bundle;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog.Builder;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.databinding.adapters.ViewGroupBindingAdapter.OnAnimationEnd;
@@ -111,6 +113,8 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
     int expanded = 0;
 
     private Context mContext;
+
+    private Toolbar mToolbar;
 
 
     private void showDatePickerDialog() {
@@ -181,6 +185,16 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
     protected void onViewInit() {
         super.onViewInit();
         mBinding = DataBindingUtil.setContentView(AddEditActivity.this, R.layout.activity_add_edit);
+        mToolbar = findViewById(R.id.add_edit_toolbar);
+        setSupportActionBar(mToolbar);
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayShowTitleEnabled(true);
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            setTitle("Add Countdown");
+        }
+
+
 
         //Load up array with out image references
         for (int i = 0; i < 7; i++) {
@@ -204,8 +218,8 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
             rootLayout.setVisibility(View.GONE);
         }
 
-        getWindow().setNavigationBarColor(getResources().getColor(R.color.app_theme_primary));
-        getWindow().setStatusBarColor(getResources().getColor(R.color.app_theme_sub));
+        getWindow().setStatusBarColor(getResources().getColor(R.color.blue_grey_600));
+        getWindow().setNavigationBarColor(getResources().getColor(R.color.blue_grey_600));
 
         //Set today's time for textView on first start-up
         setExpiryDateForTextView();
@@ -412,6 +426,7 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
     private void checkIntent() {
         Intent intent = getIntent();
         if (intent.hasExtra(CHOSEN_EVENT_ID)) {
+            setTitle("Update Countdown");
             long id = intent.getLongExtra(mConstants.CHOSEN_EVENT_ID, 0);
 
             if (id != 0) {
@@ -422,11 +437,11 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
 
             }
         } else if (intent.hasExtra(CHOSEN_EXPIRED_EVENT_ID)) {
+            setTitle("Update Countdown");
             long id = intent.getLongExtra(CHOSEN_EXPIRED_EVENT_ID, 0);
             if (id != 0) {
                 activityRecievedIntent = true;
                 getExpiredEventFromDb(id);
-                mBinding.addEditDeleteEventIcon.setVisibility(View.VISIBLE);
                 mBinding.addEditBtnTextView.setText("Update");
             }
 
@@ -791,16 +806,6 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
                     .playOn(mBinding.alertSwitch);
         }
 
-        public void deleteEventIconClicked(View view) {
-            mViewModel.deleteExpiredEventById(eventExpiredId);
-            unRevealActivity();
-        }
-
-        public void exitAddEditIconClicked(View view) {
-            YoYo.with(Techniques.Pulse).duration(100)
-                    .playOn(mBinding.addEditExitIcon);
-            unRevealActivity();
-        }
 
         public void setLocationChipClicked(View view) {
             YoYo.with(Techniques.Pulse).duration(100)
@@ -870,9 +875,9 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
         if (bitmap != null && imageLoadedFromUserPhone) {
             mBinding.addEditCustomImage.setImageBitmap(bitmap);
         } else {
-            if (chosenImageId != 0){
+            if (chosenImageId != 0) {
                 mBinding.addEditCustomImage.setBackgroundResource(chosenImageId);
-            }else{
+            } else {
                 mBinding.addEditCustomImage.setBackgroundResource(randomImageIdArray[0]);
             }
 
@@ -1007,14 +1012,10 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
                 public void run() {
                     revealButton();
                     fadeOutProgressDialog();
-                    fadeOutActivityToolbar();
                 }
             }, 2000);
         }
 
-        private void fadeOutActivityToolbar() {
-            YoYo.with(Techniques.FadeOutRight).duration(500).playOn(mBinding.addEditCardViewToolbar);
-        }
 
         private void revealButton() {
             mBinding.addEditCreateCountdownBtn.setElevation(0f);
@@ -1032,6 +1033,7 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
                     .createCircularReveal(mBinding.rootLayout, x, y, AppHelperClass.getFabWidth(mContext),
                             finalRadius);
             reveal.setDuration(350);
+
             reveal.addListener(new AnimatorListenerAdapter() {
                 @Override
                 public void onAnimationEnd(final Animator animation) {
@@ -1098,5 +1100,30 @@ public class AddEditActivity extends ModelActivity implements MyConstants {
         builder.show();
 
 
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(final Menu menu) {
+        if (isExpiredEventBeingUpdated) {
+            getMenuInflater().inflate(R.menu.add_edit_menu, menu);
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                unRevealActivity();
+                break;
+            case R.id.delete_countdown:
+                mViewModel.deleteExpiredEventById(eventExpiredId);
+                unRevealActivity();
+                break;
+
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 }

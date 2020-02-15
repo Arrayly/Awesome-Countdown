@@ -98,6 +98,9 @@ public class ArchiveFragment extends ModelFragment implements MyConstants {
                 chosenExpiredEventId = mExpiredEvents.get(position).getID();
                 Intent intent = new Intent(getActivity(),AddEditActivity.class);
                 intent.putExtra(CHOSEN_EXPIRED_EVENT_ID,chosenExpiredEventId);
+                //overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+
+
                 startActivityForResult(intent,REQUEST_UPDATE_EVENT);
             }
         });

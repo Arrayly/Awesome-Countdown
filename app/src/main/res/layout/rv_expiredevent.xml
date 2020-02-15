@@ -3,7 +3,7 @@
     android:id="@+id/event_rv_linear_layout"
     android:background="@color/white"
     android:layout_width="match_parent"
-    android:layout_height="150dp"
+    android:layout_height="125dp"
     android:orientation="vertical">
 
     <androidx.cardview.widget.CardView

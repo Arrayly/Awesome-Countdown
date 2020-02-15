@@ -14,64 +14,37 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
+        android:background="@color/grey_3"
         android:layout_height="match_parent">
 
+        <include
+            android:id="@+id/add_edit_toolbar"
+            layout="@layout/toolbar" />
 
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/add_edit_cardView_toolbar"
+        <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            app:cardElevation="8dp">
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <ImageView
-                    android:id="@+id/add_edit_exitIcon"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:layout_alignParentStart="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="5dp"
-                    android:layout_marginLeft="5dp"
-                    android:onClick="@{clickListener::exitAddEditIconClicked}"
-                    android:src="@drawable/back_icon"></ImageView>
-
-                <TextView
-                    android:id="@+id/add_edit_toolbar_txtview"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="75dp"
-                    android:text="Add countdown"
-                    android:textStyle="bold"></TextView>
-
-                <ImageView
-                    android:id="@+id/add_edit_delete_event_icon"
-                    android:layout_width="16dp"
-                    android:layout_height="24dp"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginRight="5dp"
-                    android:onClick="@{clickListener::deleteEventIconClicked}"
-                    android:src="@drawable/delete_icon"
-                    android:visibility="invisible"></ImageView>
-
-            </RelativeLayout>
+            android:background="@color/grey_3"
+            android:layout_below="@id/add_edit_toolbar"
+            android:layout_height="wrap_content">
 
 
-        </com.google.android.material.card.MaterialCardView>
+
 
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@+id/add_edit_cardView_toolbar"
-            android:background="@android:color/background_light"
+            android:layout_below="@+id/add_edit_toolbar"
+            android:layout_marginTop="15dp"
+            android:background="@color/grey_3"
             android:orientation="vertical"
             android:padding="10dp"
             tools:context=".AddEditEvent">
+
+
+
+
+
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/input_date_layout"
@@ -340,33 +313,49 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:text="Create"
-                    android:textColor="@color/white"></TextView>
+                    android:textColor="@color/white" />
 
                 <ProgressBar
                     android:id="@+id/addEdit_progressBar"
                     android:layout_width="36dp"
                     android:layout_height="36dp"
                     android:layout_gravity="center"
-                    android:visibility="invisible"></ProgressBar>
+                    android:visibility="invisible" />
 
             </FrameLayout>
 
+            <View
+                android:id="@+id/spacer"
+                android:layout_marginTop="15dp"
+                android:layout_width="match_parent"
+                android:layout_height="20dp">
+            </View>
+
 
         </LinearLayout>
+
+        </androidx.core.widget.NestedScrollView>
+
+        <View
+            android:id="@+id/drop_shadow_addedit"
+            android:layout_width="match_parent"
+            android:layout_height="5dp"
+            android:layout_below="@id/add_edit_toolbar"
+            android:background="@drawable/drop_shadow" />
 
         <View
             android:id="@+id/root_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/app_theme_primary"
+            android:background="@color/pink_400"
             android:visibility="invisible" />
 
         <View
             android:id="@+id/root_layout2"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/app_theme_buttons"
-            android:visibility="invisible" />
+            android:background="@color/pink_400"
+            android:visibility="visible" />
         <!--        Remember to set visibility to visible for root_laayout 2 only!-->
 
     </RelativeLayout>

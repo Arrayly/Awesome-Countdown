@@ -88,10 +88,11 @@ public class MainActivity extends ModelActivity implements MyConstants {
         if (mToolbar != null) {
             setSupportActionBar(mToolbar);
             getSupportActionBar().setDisplayShowTitleEnabled(true);
+            setTitle("Countdown");
         }
 
-        getWindow().setNavigationBarColor(getResources().getColor(R.color.app_theme_primary));
-        getWindow().setStatusBarColor(getResources().getColor(R.color.app_theme_sub));
+        getWindow().setStatusBarColor(getResources().getColor(R.color.blue_grey_600));
+        getWindow().setNavigationBarColor(getResources().getColor(R.color.blue_grey_600));
 
         //Connect state pager to view with special state pager adapter
         SectionsPagerAdapter pagerAdapter =
@@ -100,7 +101,7 @@ public class MainActivity extends ModelActivity implements MyConstants {
         mViewPager = findViewById(R.id.MainActivity_ViewPager);
 
         if (mViewPager != null) {
-            mViewPager.setPageTransformer(true, new ZoomOutPageTransformer());
+            mViewPager.setPageTransformer(true, new DepthPageTransformer());
             mViewPager.setAdapter(pagerAdapter);
         }
 
@@ -355,7 +356,9 @@ public class MainActivity extends ModelActivity implements MyConstants {
     private class MainActivityTransitionAnimation {
 
         private void fadeOutFabandToolbar() {
+            YoYo.with(Techniques.FadeOut).duration(450).playOn(mMainBinding.tabs);
             YoYo.with(Techniques.FadeOut).duration(450).playOn(mMainBinding.mainAcitivtyAppbar);
+            YoYo.with(Techniques.FadeOut).duration(450).playOn(mMainBinding.dropShadowMainActivity);
             YoYo.with(Techniques.FadeOut).duration(100).withListener(new AnimatorListenerAdapter() {
                 @Override
                 public void onAnimationEnd(final Animator animation) {
@@ -405,7 +408,9 @@ public class MainActivity extends ModelActivity implements MyConstants {
         mMainBinding.mainRootLayout.setVisibility(View.INVISIBLE);
         YoYo.with(Techniques.FadeIn).duration(500).playOn(mMainBinding.MainActivityFab);
         YoYo.with(Techniques.FadeIn).duration(300).playOn(mMainBinding.mainAcitivtyAppbar);
-        mMainBinding.MainActivityFab.setElevation(10f);
+        YoYo.with(Techniques.FadeIn).duration(300).playOn(mMainBinding.dropShadowMainActivity);
+        YoYo.with(Techniques.FadeIn).duration(300).playOn(mMainBinding.tabs);
+        mMainBinding.MainActivityFab.setElevation(12f);
     }
 }
 

@@ -7,11 +7,12 @@
 
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
             android:id="@+id/swipe_refresh_eventfeed"
+            android:background="@color/grey_3"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
             <androidx.recyclerview.widget.RecyclerView
                 android:padding="4dp"
-                android:backgroundTint="@color/white"
+                android:backgroundTint="@color/grey_3"
                 android:layout_width="match_parent"
                 android:id="@+id/eventFeed_recycler"
                 android:background="@android:color/white"

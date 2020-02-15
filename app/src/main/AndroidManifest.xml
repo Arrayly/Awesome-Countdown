@@ -12,7 +12,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".AddEditActivity"
-            android:theme="@style/AppTheme.Transparent">
+            android:theme="@style/AppTheme.Transparent"
+            android:parentActivityName=".MainActivity">
         </activity>
         <activity android:name=".MainActivity"
             android:theme="@style/AppTheme">
@@ -23,5 +24,8 @@
             </intent-filter>
         </activity>
         <receiver android:name=".ReminderBroadcast"/>
+        <meta-data
+            android:name="preloaded_fonts"
+            android:resource="@array/preloaded_fonts" />
     </application>
 </manifest>

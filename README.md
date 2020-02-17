@@ -21,19 +21,25 @@
 * [Java](https://www.oracle.com/java/technologies/javase-downloads.html) - Java Development Kit (JDK)
 
 ### Main Libraries Used
-*[Android Jetpack](https://developer.android.com/jetpack) - Room, LiveData, Databinding.
+* [Android Jetpack](https://developer.android.com/jetpack) - Room, LiveData, Databinding.
 
-*[Picasso](https://square.github.io/picasso/) -  For remote image loading.
+* [Picasso](https://square.github.io/picasso/) -  For remote image loading.
 
-*[Material Design](https://material.io/develop/android/docs/getting-started/) - Material components for Android.
+* [Material Design](https://material.io/develop/android/docs/getting-started/) - Material components for Android.
 
-*[LottieFiles](https://lottiefiles.com/) - Cool animations library.
+* [LottieFiles](https://lottiefiles.com/) - Cool animations library.
 
-*[Retrofit](https://square.github.io/retrofit/) - REST Client with GSON converter factory.
+* [Retrofit](https://square.github.io/retrofit/) - REST Client with GSON converter factory.
 
-*[Expandable Layouts](https://github.com/AAkira/ExpandableLayout) - Expandable layout with various animations.
+* [Expandable Layouts](https://github.com/AAkira/ExpandableLayout) - Expandable layout with various animations.
 
-*[Color Picker](https://github.com/yukuku/ambilwarna) - Enable the users to select an arbitrary color.
+* [Color Picker](https://github.com/yukuku/ambilwarna) - Enable the users to select an arbitrary color.
+
+### Download/ Install
+```
+Android minimum API 23 (Marshmallow)
+```
+* [APK File](https://drive.google.com/open?id=1KUYhmozTdinSU6O2wQvqgCzAu6fgszpO)
 
 
 

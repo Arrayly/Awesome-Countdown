@@ -1,7 +1,8 @@
-# Countdown App
+# Awesome Countdown App
 
-### Android Native: Tracks time for upcoming events in beauty and elegance.
-
+```
+Android Native: Tracks time for upcoming events in beauty and elegance.
+```
 ![pic2](https://user-images.githubusercontent.com/57268763/74643826-450d3500-516d-11ea-8e32-90cb5b4dff0a.PNG)
 
 

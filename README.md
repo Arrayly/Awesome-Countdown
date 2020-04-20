@@ -12,7 +12,7 @@ Android Native: Tracks time for upcoming events in beauty and elegance.
 * Intuitive UI, Material Design and Animations.
 * Push notifcations for expired events.
 * Customisation features.
-* Integrated RestFul API using Retrofit for TicketMaster events.
+* Integrated REST API for TicketMaster events.
 * MVVM (Model–View–ViewModel) architecture.
 ```
 
@@ -35,6 +35,18 @@ Android Native: Tracks time for upcoming events in beauty and elegance.
 * [Expandable Layouts](https://github.com/AAkira/ExpandableLayout) - Expandable layout with various animations.
 
 * [Color Picker](https://github.com/yukuku/ambilwarna) - Enable the users to select an arbitrary color.
+
+### To-Do
+* High resolution images slowing down the app
+* Notification messages require adjustments
+* Filtes and advanced search options for API calls
+* RecyclerView pagination
+* App preferences activity
+* Logo and splash screen
+* Various bugs
+  - Expired events on return to app snackbar not showing up
+  - Circular reveal animation needs to be improved
+  - Archive fragment reverse collections list issue
 
 ### Download/ Install
 * [APK File](https://drive.google.com/open?id=1KUYhmozTdinSU6O2wQvqgCzAu6fgszpO)

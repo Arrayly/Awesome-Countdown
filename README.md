@@ -8,11 +8,11 @@
 ### Main features
 
 ```
-* Intuitive UI, cool design features and animations.
-* Alert notifcations (alarm manager) for expired events.
-* Customise events.
-* Integrated RestFul API using Retrofit - TicketMaster events.
-* MVVM (Model–view–viewmodel) architecture.
+* Intuitive UI, Material Design and Animations.
+* Push notifcations for expired events.
+* Customisation features.
+* Integrated RestFul API using Retrofit for TicketMaster events.
+* MVVM (Model–View–ViewModel) architecture.
 ```
 
 ### Built With
@@ -36,9 +36,6 @@
 * [Color Picker](https://github.com/yukuku/ambilwarna) - Enable the users to select an arbitrary color.
 
 ### Download/ Install
-```
-Android minimum API 23 (Marshmallow)
-```
 * [APK File](https://drive.google.com/open?id=1KUYhmozTdinSU6O2wQvqgCzAu6fgszpO)
 
 
